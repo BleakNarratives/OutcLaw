@@ -84,3 +84,4 @@ extracted_legal_ai/
 case_data/
 __pycache__/
 *.pyc
+*.zip
