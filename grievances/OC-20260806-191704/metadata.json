@@ -1,0 +1,17 @@
+{
+  "grievance_id": "OC-20260806-191704",
+  "attorney_name": "A",
+  "attorney_bar_number": "1",
+  "state": "kansas",
+  "complainant": "Pro Se Litigant",
+  "case_number": null,
+  "generated_date": "2026-08-06T19:17:04.750013",
+  "evidence_count": 1,
+  "high_severity_count": 1,
+  "estimated_defense_cost": 12000,
+  "rule_violations": [
+    "KRPC 3.3(a)(1) - Candor Toward the Tribunal (See: Kansas Supreme Court Rule 240)",
+    "KRPC 8.4(c) - Misconduct Involving Dishonesty",
+    "K.S.A. 7-105 - Attorney Duties"
+  ]
+}

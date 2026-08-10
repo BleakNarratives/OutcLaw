@@ -1,0 +1,37 @@
+name: OutClaw CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  offline-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install core dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Compile supported entry points
+        run: python -m py_compile outclaw_cli.py outclaw_regression.py outclaw_safety.py
+
+      - name: Run offline unit tests
+        run: python -m unittest discover -s outclaw_tests -t . -v
+
+      - name: Run conformance regression
+        run: python outclaw_regression.py

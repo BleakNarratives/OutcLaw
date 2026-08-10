@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# OutClaw repository entry point.
+# Deliberately does not install dependencies or contact external services.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+exec python3 "$SCRIPT_DIR/outclaw_cli.py" "$@"

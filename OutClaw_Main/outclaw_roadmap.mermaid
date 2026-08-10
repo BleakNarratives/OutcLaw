@@ -1,0 +1,45 @@
+flowchart TD
+    A["SETUP<br/>manifesto + folders + Yarder open"] --> B["ROUND 1 — Set Lines<br/>independent spars"]
+
+    B --> B1["Spar: Detection depth<br/>→ Kimi"]
+    B --> B2["Spar: Architecture<br/>→ DeepSeek"]
+    B --> B3["Spar: Failure modes<br/>→ Claude (Chrome)"]
+    B --> B4["Spar: Runnable output<br/>→ Claude (App)"]
+
+    B1 --> C["LANDING<br/>Round 1 compiled"]
+    B2 --> C
+    B3 --> C
+    B4 --> C
+
+    C --> D["ROUND 2 — Cross-Haul<br/>send full landing back to each model"]
+    D --> D1["Each model reacts:<br/>disagree / revise / fill gaps"]
+    D1 --> E["FULL HAUL<br/>Round 3 compiled"]
+
+    E --> F["SYNTHESIS<br/>you decide: keep / cut / needs a human call"]
+    F --> G{"Run against<br/>7-case regression suite"}
+
+    G -- "fails" --> F
+    G -- "passes" --> H["Merge into<br/>outclaw_validator.py"]
+    H --> I["Log to WHO_DID_WHAT.md"]
+
+    I --> J["🎯 BUFFY v0.2.0<br/>LLM layer + seed expansion"]
+    J --> J1["outclaw_llm.py<br/>cloud cascade → semantic reasoning"]
+    J --> J2["22 cases + 12 statutes<br/>seed registry"]
+    J --> J3["12 filing intents<br/>safety gate"]
+    J --> J4["outclaw_semantic.py<br/>package-level registry"]
+
+    J1 --> K["NEXT<br/>multi-model LLM consensus"]
+    J2 --> K
+    J3 --> K
+    J4 --> K
+
+    K --> L["FUTURE<br/>real citation index integration"]
+    L --> M["PRODUCTION<br/>OutClaw v1.0"]
+
+    style A fill:#1A1611,stroke:#4A3A28,color:#EDEAE3
+    style C fill:#1A1611,stroke:#4A3A28,color:#D4A017
+    style E fill:#1A1611,stroke:#4A3A28,color:#D4A017
+    style G fill:#241C15,stroke:#E8590C,color:#E8590C
+    style H fill:#1D2A1A,stroke:#4A9E4A,color:#B8E6B8
+    style J fill:#1A1A40,stroke:#4A4AE8,color:#B8C8FF
+    style M fill:#1D2A1A,stroke:#4A9E4A,color:#B8E6B8

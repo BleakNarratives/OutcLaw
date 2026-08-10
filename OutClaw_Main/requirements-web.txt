@@ -1,0 +1,9 @@
+# OutClaw Web Dashboard Dependencies
+# Minimal requirements for browser-based interface
+
+# Core web framework
+flask>=3.0.0
+
+# Dashboard dependencies (from requirements-dashboard.txt)
+rich>=13.0.0
+pyyaml>=6.0

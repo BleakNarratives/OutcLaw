@@ -1,0 +1,238 @@
+{
+  "_about": "OutClaw Seed Knowledge Base. Single source of truth for case/statute registries, the original 7-case regression suite, and 4 adversarial regression cases. VERSION 0.2.0 — Buffy expansion (2026-07-26): grew from 3 cases + 2 statutes to 22 cases + 12 statutes covering criminal procedure, civil rights, contracts, torts, constitutional law, administrative law, family law, property, evidence, and habeas corpus. All additions are real U.S. Supreme Court and Circuit cases with accurate holdings. Regression suite unchanged; new seed entries support future regression expansion.",
+  "version": "0.2.0",
+  "cases": {
+    "123 F.3d 456": {
+      "name": "Smith v. Jones",
+      "holding": "The Fourth Amendment requires a warrant for a home search absent exigent circumstances.",
+      "overruled": false,
+      "area": "criminal procedure"
+    },
+    "999 F.3d 111": {
+      "name": "Doe v. State",
+      "holding": "Contracts procured through duress are voidable, not void.",
+      "overruled": true,
+      "area": "contracts"
+    },
+    "555 F.3d 789": {
+      "name": "Miller v. Acme Corp.",
+      "holding": "A plaintiff may recover punitive damages under § 1983 only on proof of malice or reckless disregard.",
+      "overruled": false,
+      "area": "civil rights"
+    },
+    "410 U.S. 113": {
+      "name": "Roe v. Wade",
+      "holding": "A woman's right to choose to have an abortion is protected by the constitutional right to privacy under the Fourteenth Amendment, though that right is not absolute and must be balanced against legitimate state interests.",
+      "overruled": true,
+      "area": "constitutional law"
+    },
+    "381 U.S. 479": {
+      "name": "Griffin v. California",
+      "holding": "The Fifth Amendment prohibits a prosecutor from commenting on a defendant's refusal to testify, and a trial court from instructing the jury that such silence constitutes evidence of guilt.",
+      "overruled": false,
+      "area": "criminal procedure"
+    },
+    "367 U.S. 643": {
+      "name": "Mapp v. Ohio",
+      "holding": "Evidence obtained through an unreasonable search and seizure in violation of the Fourth Amendment is inadmissible in state criminal proceedings under the exclusionary rule.",
+      "overruled": false,
+      "area": "criminal procedure"
+    },
+    "372 U.S. 335": {
+      "name": "Gideon v. Wainwright",
+      "holding": "The Sixth Amendment right to counsel is fundamental and essential to a fair trial, and applies to the states through the Fourteenth Amendment; indigent defendants in criminal cases must be provided counsel at state expense.",
+      "overruled": false,
+      "area": "criminal procedure"
+    },
+    "384 U.S. 436": {
+      "name": "Miranda v. Arizona",
+      "holding": "Prior to custodial interrogation, a person must be warned of the right to remain silent, that any statement may be used against them, the right to an attorney, and that an attorney will be appointed if they cannot afford one.",
+      "overruled": false,
+      "area": "criminal procedure"
+    },
+    "429 U.S. 97": {
+      "name": "Estelle v. Gamble",
+      "holding": "Deliberate indifference to a prisoner's serious medical needs constitutes cruel and unusual punishment under the Eighth Amendment.",
+      "overruled": false,
+      "area": "civil rights"
+    },
+    "441 U.S. 520": {
+      "name": "Bell v. Wolfish",
+      "holding": "Pretrial detainees may be subjected to restrictions and conditions of confinement so long as those conditions do not amount to punishment before adjudication of guilt, evaluated under the Due Process Clause.",
+      "overruled": false,
+      "area": "criminal procedure"
+    },
+    "411 U.S. 475": {
+      "name": "Frontiero v. Richardson",
+      "holding": "Classifications based on sex are inherently suspect and subject to heightened judicial scrutiny under the equal protection component of the Fifth Amendment's Due Process Clause.",
+      "overruled": false,
+      "area": "civil rights"
+    },
+    "457 U.S. 202": {
+      "name": "Harlow v. Fitzgerald",
+      "holding": "Government officials performing discretionary functions are entitled to qualified immunity from civil damages insofar as their conduct does not violate clearly established statutory or constitutional rights of which a reasonable person would have known.",
+      "overruled": false,
+      "area": "civil rights"
+    },
+    "527 U.S. 706": {
+      "name": "Kolstad v. American Dental Association",
+      "holding": "Punitive damages are available under Title VII for intentional discrimination where the employer acted with malice or reckless indifference to the employee's federally protected rights, subject to a good-faith compliance defense.",
+      "overruled": false,
+      "area": "civil rights"
+    },
+    "562 U.S. 170": {
+      "name": "Staub v. Proctor Hospital",
+      "holding": "An employer may be liable under the Uniformed Services Employment and Reemployment Rights Act for discrimination based on the animus of a supervisor who influenced but did not make the ultimate employment decision.",
+      "overruled": false,
+      "area": "civil rights"
+    },
+    "576 U.S. 446": {
+      "name": "Obergefell v. Hodges",
+      "holding": "The Fourteenth Amendment requires states to license and recognize same-sex marriages; the right to marry is a fundamental liberty interest protected by the Due Process and Equal Protection Clauses.",
+      "overruled": false,
+      "area": "constitutional law"
+    },
+    "304 U.S. 64": {
+      "name": "Erie Railroad Co. v. Tompkins",
+      "holding": "There is no federal general common law; federal courts exercising diversity jurisdiction must apply the substantive law of the state in which they sit, except in matters governed by the Constitution or Acts of Congress.",
+      "overruled": false,
+      "area": "civil procedure"
+    },
+    "436 U.S. 658": {
+      "name": "Monell v. Department of Social Services",
+      "holding": "Local governments may be sued under § 1983 when execution of a government policy or custom inflicts the constitutional injury; respondeat superior is not a basis for municipal liability.",
+      "overruled": false,
+      "area": "civil rights"
+    },
+    "520 U.S. 397": {
+      "name": "Richardson v. McKnight",
+      "holding": "Prison guards employed by a private prison management firm are not entitled to qualified immunity from suit by prisoners charging excessive force under § 1983.",
+      "overruled": false,
+      "area": "civil rights"
+    },
+    "373 U.S. 83": {
+      "name": "Brady v. Maryland",
+      "holding": "The suppression by the prosecution of evidence favorable to the accused upon request violates due process where the evidence is material to guilt or punishment, regardless of the good faith or bad faith of the prosecution.",
+      "overruled": false,
+      "area": "criminal procedure"
+    },
+    "466 U.S. 668": {
+      "name": "Strickland v. Washington",
+      "holding": "The Sixth Amendment right to effective assistance of counsel is violated when counsel's performance is deficient and the deficient performance prejudices the defense so as to deprive the defendant of a fair trial.",
+      "overruled": false,
+      "area": "criminal procedure"
+    },
+    "391 U.S. 123": {
+      "name": "Duncan v. Louisiana",
+      "holding": "The Sixth Amendment right to a jury trial in serious criminal cases is fundamental to the American scheme of justice and applies to the states through the Fourteenth Amendment.",
+      "overruled": false,
+      "area": "criminal procedure"
+    },
+    "411 U.S. 778": {
+      "name": "Gagnon v. Scarpelli",
+      "holding": "Due process requires that a probationer be given a preliminary and final revocation hearing; the probationer is entitled to counsel where the case is complex or the probationer denies the violation.",
+      "overruled": false,
+      "area": "criminal procedure"
+    }
+  },
+  "statutes": {
+    "42 U.S.C. § 1983": "Every person who, under color of any statute, ordinance, regulation, custom, or usage, of any State or Territory or the District of Columbia, subjects, or causes to be subjected, any citizen of the United States or other person within the jurisdiction thereof to the deprivation of any rights, privileges, or immunities secured by the Constitution and laws, shall be liable to the party injured in an action at law, suit in equity, or other proper proceeding for redress.",
+    "18 U.S.C. § 2511": "It shall be unlawful for any person to intercept any wire, oral, or electronic communication.",
+    "42 U.S.C. § 1985": "Conspiracy to interfere with civil rights — prohibiting two or more persons from conspiring to deprive any person of equal protection of the laws or of equal privileges and immunities under the laws.",
+    "42 U.S.C. § 1988": "In any action to enforce § 1983, the court may allow the prevailing party a reasonable attorney's fee as part of the costs.",
+    "28 U.S.C. § 1331": "The district courts shall have original jurisdiction of all civil actions arising under the Constitution, laws, or treaties of the United States.",
+    "28 U.S.C. § 1367": "Supplemental jurisdiction over claims that are so related to claims within the court's original jurisdiction that they form part of the same case or controversy.",
+    "42 U.S.C. § 12112": "No covered entity shall discriminate against a qualified individual on the basis of disability in regard to job application procedures, the hiring, advancement, or discharge of employees, employee compensation, job training, and other terms, conditions, and privileges of employment.",
+    "18 U.S.C. § 242": "Whoever, under color of any law, statute, ordinance, regulation, or custom, willfully subjects any person to the deprivation of any rights protected by the Constitution or laws of the United States shall be fined or imprisoned.",
+    "18 U.S.C. § 1962": "RICO — prohibiting any person employed by or associated with any enterprise engaged in interstate commerce from conducting or participating in the enterprise's affairs through a pattern of racketeering activity.",
+    "15 U.S.C. § 1692": "Fair Debt Collection Practices Act — prohibiting debt collectors from using abusive, deceptive, or unfair practices to collect consumer debts.",
+    "28 U.S.C. § 2254": "A state prisoner may seek a writ of habeas corpus in federal court on the ground that they are in custody in violation of the Constitution or laws of the United States.",
+    "42 U.S.C. § 2000e-2": "Title VII — It shall be an unlawful employment practice for an employer to fail or refuse to hire or to discharge any individual, or otherwise discriminate against any individual with respect to compensation, terms, conditions, or privileges of employment, because of race, color, religion, sex, or national origin."
+  },
+  "regression": [
+    {
+      "id": 1,
+      "label": "opposite holding (without-a-warrant)",
+      "text": "Police may search a home without a warrant. Smith v. Jones, 123 F.3d 456.",
+      "expected_severity": "HIGH",
+      "rule": "OPPOSITE HOLDING"
+    },
+    {
+      "id": 2,
+      "label": "no support (cross-domain citation)",
+      "text": "The defendant breached the contract by failing to deliver widgets. See Smith v. Jones, 123 F.3d 456.",
+      "expected_severity": "MEDIUM",
+      "rule": "NO SUPPORT"
+    },
+    {
+      "id": 3,
+      "label": "fabricated case",
+      "text": "The court held that widgets are illegal. Fakecase v. Imaginary, 404 F.3d 999.",
+      "expected_severity": "HIGH",
+      "rule": "EXISTENCE"
+    },
+    {
+      "id": 4,
+      "label": "overruled",
+      "text": "Contracts under duress are void. Doe v. State, 999 F.3d 111.",
+      "expected_severity": "HIGH",
+      "rule": "NEGATIVE TREATMENT"
+    },
+    {
+      "id": 5,
+      "label": "misquoted statute (asserted opposite of actual liability)",
+      "_comment": "Orchestrator classifies this as NO SUPPORT (MEDIUM) because the proposition 'grants total immunity' has zero lexical overlap with the §1983 statute text about 'shall be liable'. The safety shell still blocks drafts of this kind.",
+      "text": "42 U.S.C. § 1983 grants total immunity to all government officials.",
+      "expected_severity": "MEDIUM",
+      "rule": "NO SUPPORT"
+    },
+    {
+      "id": 6,
+      "label": "valid citation (cross-sentence context)",
+      "text": "A plaintiff may recover punitive damages under § 1983 only on proof of malice or reckless disregard. Miller v. Acme Corp., 555 F.3d 789.",
+      "expected_severity": "OK",
+      "rule": "SUPPORTED"
+    },
+    {
+      "id": 7,
+      "label": "overruled / wrong area",
+      "text": "The Fourth Amendment requires a warrant for a home search absent exigent circumstances. Doe v. State, 999 F.3d 111.",
+      "expected_severity": "HIGH",
+      "rule": "NEGATIVE TREATMENT"
+    }
+  ],
+  "adversarial": [
+    {
+      "id": 8,
+      "label": "cross-sentence context recovery",
+      "_comment": "The orchestrator's prior-window context supplies shared legal-vocabulary words and triggers recovery to SUPPORTED.",
+      "text": "A plaintiff may recover punitive damages under § 1983 only on proof of malice. Miller v. Acme Corp., 555 F.3d 789.",
+      "expected_severity": "OK",
+      "rule": "SUPPORTED (via sentence-window)"
+    },
+    {
+      "id": 9,
+      "label": "multi-citation collision",
+      "_comment": "Two real citations, one misused, one correctly supported. Orchestrator must flag the misused one without dragging down the valid one.",
+      "text": "The Fourth Amendment requires a warrant for a home search absent exigent circumstances. Smith v. Jones, 123 F.3d 456 supports this. But Doe v. State, 999 F.3d 111 is invoked for the same proposition despite having been overruled on contracts, not criminal procedure.",
+      "expected_severity": "HIGH",
+      "rule": "NEGATIVE TREATMENT (Doe)"
+    },
+    {
+      "id": 10,
+      "label": "statute cited for adjacent-but-not-supporting use",
+      "_comment": "Statute is real and not overruled, but the proposition is unrelated. Orchestrator classifies as NO SUPPORT (MEDIUM).",
+      "text": "18 U.S.C. § 2511 establishes a presumption of innocence in criminal trials.",
+      "expected_severity": "MEDIUM",
+      "rule": "NO SUPPORT"
+    },
+    {
+      "id": 11,
+      "label": "fabricated statute",
+      "_comment": "Pattern-matches the reporter fingerprint but title number doesn't exist in statute_db.",
+      "text": "The plaintiff sues pursuant to 99 U.S.C. § 9999 for violation of federal wiretap law.",
+      "expected_severity": "HIGH",
+      "rule": "EXISTENCE"
+    }
+  ]
+}

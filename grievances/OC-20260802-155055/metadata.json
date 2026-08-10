@@ -1,0 +1,17 @@
+{
+  "grievance_id": "OC-20260802-155055",
+  "attorney_name": "Fabricating Counsel",
+  "attorney_bar_number": "99999",
+  "state": "oklahoma",
+  "complainant": "Whistleblower",
+  "case_number": "",
+  "generated_date": "2026-08-02T15:50:55.977864",
+  "evidence_count": 1,
+  "high_severity_count": 1,
+  "estimated_defense_cost": 12000,
+  "rule_violations": [
+    "ORPC 3.3(a)(1) - False Statements to Tribunal (See: Oklahoma Rules of Professional Conduct, Commentary)",
+    "ORPC 8.4(c) - Dishonesty, Fraud, Deceit, or Misrepresentation",
+    "5 O.S. \u00a7 7 - Attorney Oath: Duty to maintain respect due to courts of justice"
+  ]
+}

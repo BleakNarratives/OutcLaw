@@ -1,0 +1,56 @@
+{
+  "profile_name": "Carter v. Bristow Heights Apartments, LLC (Tulsa County)",
+  "case": {
+    "defendant": "Jordan Avery Carter",
+    "case_number": "TUL-2026-SC-4481",
+    "case_type": "Small-claims housing habitability dispute (repairs, security deposit); open-records request to the City of Tulsa for code-enforcement and inspection records",
+    "state": "Oklahoma",
+    "county": "Tulsa County",
+    "district": "14th Judicial District",
+    "court": "Tulsa County District Court, Tulsa, Oklahoma",
+    "agency": "City of Tulsa — Code Enforcement Division",
+    "officers": ["Tulsa Code Enforcement Inspector (records custodian)"],
+    "judge": "PLACEHOLDER - fill in assigned judge name (Tulsa County District Court)",
+    "prosecutor": "PLACEHOLDER - n/a for civil matter; opposing counsel: Bristow Heights Apartments, LLC",
+    "defense_counsel": "PLACEHOLDER - fill in counsel name",
+    "statutes": [
+      "51 O.S. § 24A.1 (Oklahoma Open Records Act)",
+      "41 O.S. § 118 (landlord duty to maintain dwelling)",
+      "12 O.S. § 1751 (small claims procedure)",
+      "41 O.S. § 115 (security deposit rules)"
+    ],
+    "posture": "Small-claims plaintiff seeking repairs, deposit return, and city code-enforcement records; CORA request to City of Tulsa for inspection history at the subject address"
+  },
+  "research": {
+    "jurisdiction": "oklahoma",
+    "court_ids": ["okla", "oklactapp"],
+    "exclude_states": ["kansas"],
+    "date_start": "2018-01-01",
+    "keywords": [
+      "warranty of habitability",
+      "landlord duty to repair",
+      "security deposit",
+      "retaliation",
+      "code enforcement",
+      "Oklahoma Open Records",
+      "Tulsa County"
+    ],
+    "issues": [
+      "Implied warranty of habitability and landlord's statutory duty to repair under 41 O.S. § 118 in a Tulsa County small-claims action",
+      "Whether code-enforcement and inspection records for the subject property are open records under the Oklahoma Open Records Act (51 O.S. § 24A.1)",
+      "Retaliation defense: eviction or deposit withholding in response to a tenant's repair demand or code complaint"
+    ]
+  },
+  "foia": {
+    "jurisdiction": "oklahoma",
+    "agency": "City of Tulsa — Code Enforcement Division",
+    "address": "Tulsa City Hall, 175 E 2nd St, Tulsa, OK 74103 (fill in records custodian contact)",
+    "records": [
+      "All code-enforcement inspection reports for the subject address (2024-present)",
+      "Notices of violation, citations, and corrective orders issued to Bristow Heights Apartments, LLC",
+      "Permits and certificate-of-occupancy records for the subject property",
+      "Complaint history and 311 service requests tied to the subject address",
+      "Any correspondence between code enforcement and the property owner/manager"
+    ]
+  }
+}

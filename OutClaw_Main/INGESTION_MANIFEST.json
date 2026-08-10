@@ -1,0 +1,182 @@
+{
+  "manifest_version": "1.0.0",
+  "generated_at_iso8601": "2026-07-27T00:00:00Z",
+  "project_name": "OutClaw",
+  "version": "1.0.0",
+  "domain": "Legal Pro-Se Defense Toolkit",
+  "tagline": "Code Judo for the Legal System - using the legal system's own enforcement mechanisms to defend pro se litigants",
+  "primary_language": "Python",
+  "secondary_languages": ["Bash", "Markdown"],
+  "license": "MIT",
+  "repository_layout": {
+    "root": "OutClaw/",
+    "entry_points": [
+      "OutClaw/outclaw_cli.py",
+      "OutClaw/outclaw_dashboard.py",
+      "OutClaw/launch_legal_scouts.sh"
+    ]
+  },
+  "core_modules": [
+    {"name": "Citation Graph Intelligence", "path": "OutClaw/outclaw_hybrid_intelligence.py", "purpose": "Citation fraud detection via graph centrality + community detection"},
+    {"name": "Grievance Generator",         "path": "OutClaw/outclaw_grievance_generator.py", "purpose": "Bar complaint auto-generation; state-specific rules"},
+    {"name": "Reality Filter (\"So What?\")", "path": "OutClaw/outclaw_so_what_filter.py",     "purpose": "Actionability pre-check on grievance evidence"},
+    {"name": "Judicial Complaints",          "path": "OutClaw/outclaw_judicial_complaints.py", "purpose": "Federal/state judicial misconduct complaint generator"},
+    {"name": "Objections Engine",            "path": "OutClaw/outclaw_objections_engine.py",   "purpose": "Real-time trial objections; hearsay + Trensey v. Pagliaro"},
+    {"name": "Discovery Warfare",            "path": "OutClaw/outclaw_discovery_warfare.py",   "purpose": "Interrogatories, RFPs, RFAs, motions to compel"},
+    {"name": "Pro Se Survival Guide",        "path": "OutClaw/outclaw_pro_se_survival_guide.py","purpose": "Six critical legal concepts every pro se must know"},
+    {"name": "Unified Orchestrator",         "path": "OutClaw/outclaw_unified.py",             "purpose": "Cross-module orchestration facade"},
+    {"name": "Legal Docket Scout",           "path": "OutClaw/scouts/legal_docket_scout.py",   "purpose": "Attorney and judge litigation history intelligence"},
+    {"name": "Case Law Scout",               "path": "OutClaw/scouts/case_law_scout.py",       "purpose": "Legal precedent research and brief outline generation"}
+  ],
+  "architecture_docs": [
+    {"path": "OutClaw/README.md",                                  "purpose": "Project overview, quick start, module catalog"},
+    {"path": "OutClaw/SYNC_PROTOCOL.md",                           "purpose": "Cross-device swarm sync protocol (AUTHORITATIVE reference)"},
+    {"path": "OutClaw/HYBRID_INTELLIGENCE_ARCHITECTURE.md",        "purpose": "Adversarial self-improvement architecture"},
+    {"path": "OutClaw/OUTCLAW_INTEGRATION_GUIDE.md",               "purpose": "Integration patterns with vertical AI systems (Boardroom, Hotseat, AskHole)"},
+    {"path": "OutClaw/CROSS_PLATFORM_GUIDE.md",                    "purpose": "Termux/Windows/Linux/Chromebook/macOS support"},
+    {"path": "OutClaw/CODE_JUDO_MANIFESTO.md",                     "purpose": "Philosophy and strategic principles"},
+    {"path": "OutClaw/SWARM_TOPOLOGY.md",                          "purpose": "Penguin/moto4/a9 three-device reality (in this package)"},
+    {"path": "OutClaw/BLOCKER.md",                                 "purpose": "Documents what is NOT in this package (and why)"}
+  ],
+  "device_topology": {
+    "type": "single_codebase_swarm",
+    "description": "Same OutClaw/ codebase is deployed on multiple devices; per-device subtrees are runtime state, not separate repos.",
+    "initiator_node": {
+      "device_id": "penguin",
+      "hardware": "Chromebook",
+      "role": "rclone 'outclaw-cloud:' remote originator + source-of-truth"
+    },
+    "termux_nodes": [
+      {"device_id": "moto4", "hardware": "Motorola 4 5G 2024", "codebase_status": "identical_to_penguin"},
+      {"device_id": "a9",    "hardware": "Samsung A9",          "codebase_status": "identical_to_penguin"}
+    ],
+    "sync_bus_root": "~/bleaknarratives/sync_bus/",
+    "sync_protocol_doc": "OutClaw/SYNC_PROTOCOL.md",
+    "note": "Per-device event logs (messages/*.json) are NOT included in the main source zip - see SWARM_TOPOLOGY.md section 3."
+  },
+  "cloud_delivery": {
+    "carrier": "Google Drive",
+    "rclone_remote_alias": "outclaw-cloud:",
+    "rclone_remote_target": "cloud:",
+    "rclone_remote_type": "drive",
+    "rclone_scope": "drive.file",
+    "carrier_target_path": "bleaknarratives/ingest_packages/",
+    "delivery_tool": "scripts/push_ingest_to_cloud.sh",
+    "auth_helper": "scripts/setup_rclone_gdrive.sh",
+    "retention_policy_runs": 3,
+    "quota_strategy": "Keep last 3 timestamped runs on Drive to stay within ~5 GB free on a personal Drive account; each run is ~1.2 GB combined.",
+    "drive_quota_snapshot": {
+      "captured_at": "2026-07-27",
+      "total_GiB": 15,
+      "used_GiB": 7.289,
+      "free_GiB": 4.985
+    },
+    "notes": "Writer-Owns discipline from SYNC_PROTOCOL.md is what makes Google Drive safe under rclone - moto4/a9 each write to their OWN subtree, so concurrent-push filename collisions are impossible. The canonical carrier is now known to be Drive; the earlier Termux /storage/emulated/0/* paths were a red herring."
+  },
+  "exclusions": {
+    "rationale": "Reduce ingest payload, avoid binary bloat, keep history-bearing runtime state out of version control.",
+    "excluded_globs": [
+      "*/.venv/*",
+      "*/__pycache__/*",
+      "*.log",
+      "*.tmp",
+      "*/.git/*",
+      "*/extracted_legal_ai/*",
+      "*.wav",
+      "*.mp3",
+      "*.mp4",
+      "*.bin",
+      "*.safetensors",
+      "*.pt",
+      "*.pth",
+      "*.ckpt",
+      "*.gguf",
+      "*.onnx"
+    ]
+  },
+  "ingest_recommendations": [
+    "Treat the main OutClaw zip as a single Python codebase for code-aware RAG; expect ~646 MB of source after exclusions (much larger than initially projected because OutClaw/ contains substantial non-Python content: 25 PDFs, 17 docx, 17 HTML, 251 .txt scout-data dumps, etc.). The diabetes limb bundle is ~598 MB - it deliberately KEEPS heavy binaries (.wav/.mp3/etc) since it is the 'bloat' limb.",
+    "Treat device event logs (sync_bus/<node>/messages/*.json) as a SEPARATE ingestion target tagged with origin_device.",
+    "The 'diabetes limb bundle' (extracted_legal_ai/, 734 MB vendored) should be ingested separately only if legal AI model context is needed downstream.",
+    "Architecture docs (SYNC_PROTOCOL, HYBRID_INTELLIGENCE, SWARM_TOPOLOGY) are high-signal anchor points for system-level questions about design intent."
+  ],
+  "companion_artifacts": [
+    {
+      "name": "OutClaw main package",
+      "filename_pattern": "OutClaw_v1.0.0_*.zip",
+      "contents": "Scripts + docs + LICENSE + .gitignore + requirements.txt + this manifest + SWARM_TOPOLOGY + BLOCKER"
+    },
+    {
+      "name": "Diabetes limb bundle",
+      "filename_pattern": "OutClaw_diabetes_limb_bundle_*.zip",
+      "contents": "Vendored extracted_legal_ai/ content (~734 MB) - separate ingestion target"
+    },
+    {
+      "name": "Checksum sidecar",
+      "filename_pattern": "checksums_*.sha256",
+      "contents": "SHA-256 hashes for both zip artifacts"
+    }
+  ],
+  "blockers": [
+    {
+      "issue": "No per-device event-log zips included in this ingest push",
+      "details": "Three layers were checked. (1) Termux Android shared-storage paths /storage/emulated/0/BleakNarratives, /storage/emulated/0/RootBase are not mounted on this Chromebook session. (2) SD-card path /storage/ED7B-AD5A/eoot/2026 is not mounted (SD not present). (3) The canonical Google Drive carrier outclaw-cloud:bleaknarratives/sync_bus/{moto4,a9}/ does not exist yet - peer devices have not pushed envelopes. Even with Drive access there is nothing to ingest for moto4/a9 at this time.",
+      "see": "BLOCKER.md",
+      "mitigation": "There is no separate 'Moto 4 5g codebase' or 'Samsung A9 codebase' to ingest - moto4 and a9 are swarm NODES running the same OutClaw codebase (see SWARM_TOPOLOGY.md). The single OutClaw/ source tree IS in the main package. Once peer devices bring sync_bus_pull.sh online and push envelopes to Drive, follow the path documented in BLOCKER.md section 'How to ingest per-device event logs (future session)'."
+    }
+  ],
+  "deliverables_record": {
+    "build_at_iso8601": "2026-07-27T10:33:50Z",
+    "build_path": "/home/bleaknarratives/ingest_packages/",
+    "integrity_verified": true,
+    "entries_use_relative_paths": true,
+    "size_note": "Main zip is ~646 MB and limb bundle ~598 MB. Mutable in future runs via the .log / .venv exclusion pattern in scripts/package_for_ingest.sh.",
+    "artifacts": [
+      {
+        "name": "OutClaw main package",
+        "filename": "OutClaw_v1.0.0_20260727T103350Z.zip",
+        "size_human": "646M",
+        "sha256": "49d0e7f666c7ddc4de420afd350cd9deb404a13d439b0de417835e7f517ff460"
+      },
+      {
+        "name": "Diabetes limb bundle",
+        "filename": "OutClaw_diabetes_limb_bundle_20260727T103350Z.zip",
+        "size_human": "598M",
+        "sha256": "629afeba3baedf6b1ded992140ef54bbdf0a12d17508261a200d05e74d411f5a"
+      },
+      {
+        "name": "Checksum sidecar",
+        "filename": "checksums_20260727T103350Z.sha256"
+      }
+    ]
+  },
+  "cloud_upload_record": {
+    "uploaded_at_iso8601": "2026-07-27T~10:34Z",
+    "delivery_method": "Manual rclone copyto -v after the push_ingest_to_cloud.sh script silently no-op'd (rclone exited 0 but bytes didn't land - Drive resumable-upload claim-success-before-finalize pattern). Subsequent script invocations use the patched copyto (per-file byte verification vs Drive lsjson) to prevent recurrence.",
+    "carrier": "Google Drive",
+    "carrier_path": "outclaw-cloud:bleaknarratives/ingest_packages/",
+    "drive_quota_after_upload": {
+      "total_GiB": 15,
+      "used_GiB": 8.730,
+      "free_GiB": 6.270
+    },
+    "verified_via": [
+      "rclone ls outclaw-cloud:bleaknarratives/ingest_packages/ -- confirmed 3 entries (sizes 676623963 / 626455270 / 294 bytes) matching local artifacts",
+      "rclone lsjson --json | python3 -c json.load -- total 1303079527 bytes across 3 items post-push"
+    ],
+    "artifacts_pushed_to_drive": [
+      {
+        "filename": "OutClaw_v1.0.0_20260727T103350Z.zip",
+        "size_bytes": 676623963
+      },
+      {
+        "filename": "OutClaw_diabetes_limb_bundle_20260727T103350Z.zip",
+        "size_bytes": 626455270
+      },
+      {
+        "filename": "checksums_20260727T103350Z.sha256",
+        "size_bytes": 294
+      }
+    ]
+  }
+}

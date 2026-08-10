@@ -1,0 +1,18 @@
+# OutClaw Dashboard Requirements
+# Minimal dependencies for the TUI dashboard
+
+# Core UI framework
+rich>=13.0.0
+
+# Configuration
+pyyaml>=6.0
+
+# Optional: File monitoring (for auto-audit on file changes)
+# watchdog>=3.0.0
+
+# Note: OutClaw core dependencies are assumed to be already installed
+# If running standalone, also install:
+# - requests (for CourtListener API)
+#
+# LLM features use FREE CLOUD providers via the cascade — no local model
+# (Ollama) is required or used.

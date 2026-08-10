@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- OutClaw app icon: a shield with a checkmark — "checked before you file" -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e1424"/>
+      <stop offset="1" stop-color="#070a14"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#00ffcc"/>
+      <stop offset="1" stop-color="#00c9a0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- rounded-square background -->
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="url(#bg)" stroke="#1c2b45" stroke-width="4"/>
+
+  <!-- subtle inner glow -->
+  <rect x="8" y="8" width="240" height="240" rx="52" fill="none" stroke="#00ffcc" stroke-opacity="0.12" stroke-width="2"/>
+
+  <!-- shield -->
+  <path d="M128 46
+           L186 68
+           V124
+           C186 162 162 194 128 210
+           C94 194 70 162 70 124
+           V68 Z"
+        fill="none" stroke="url(#shield)" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- checkmark -->
+  <path d="M104 128 L121 145 L153 110"
+        fill="none" stroke="#00ffcc" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- highlight on shield edge -->
+  <path d="M128 60 L180 80 V124 C180 156 160 184 128 199"
+        fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="6" stroke-linecap="round"/>
+</svg>

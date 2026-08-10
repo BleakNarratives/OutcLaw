@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-08-06T23:51:04.214714",
+  "scout_type": "case_law",
+  "research_queries": [
+    {
+      "type": "core_issue",
+      "query": "generic contract dispute",
+      "purpose": "Find cases directly on point"
+    },
+    {
+      "type": "opposition",
+      "query": "defense generic contract dispute",
+      "purpose": "Anticipate opposing arguments"
+    }
+  ],
+  "cases_found": [],
+  "legal_arguments": [],
+  "flags": [
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests"
+  ],
+  "summary": "\n================================================================================\nCASE LAW RESEARCH SUMMARY\n================================================================================\n\nIssue Researched: generic contract dispute\nResearch Date: 2026-08-06 18:51:07\n\nRESULTS:\n- Total Cases Found: 0\n- Sources: \n- Courts: \n- Date Range: None to None\n\nKEY HOLDINGS (0):\n\nWINNING ARGUMENTS (0):\n\nADVERSE AUTHORITY TO DISTINGUISH (0):\n\n================================================================================\n",
+  "analysis": {
+    "total_cases": 0,
+    "sources": {},
+    "courts": {},
+    "date_range": {
+      "earliest": null,
+      "latest": null
+    },
+    "key_holdings": [],
+    "winning_arguments": [],
+    "adverse_authority": []
+  }
+}

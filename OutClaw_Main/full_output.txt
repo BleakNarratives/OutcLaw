@@ -1,0 +1,28 @@
+
+  Type the ack_token to confirm 'draft_motion_to_dismiss', or press Enter to abort: OK -- audit clean and ack verified.
+{
+  "intent": "draft_motion_to_dismiss",
+  "audit_summary": {
+    "regex_hits": 0,
+    "arch_total_citations": 2,
+    "arch_flagged_count": 2,
+    "severity_counts": {
+      "OK": 0,
+      "LOW": 0,
+      "MEDIUM": 0,
+      "HIGH": 0
+    },
+    "recovered_by_window_count": 0,
+    "llm_assisted_count": 0,
+    "llm_escalation": {
+      "disabled": true
+    },
+    "llm_escalated_count": 0,
+    "safe_to_draft": true
+  },
+  "unresolved": [],
+  "ack_token": "6b8a-7023",
+  "ack_token_fingerprint": "36188da19ab1170d",
+  "ack_consumed_at": 1785950007.4830925,
+  "outcome": "audit-clean-ack-verified"
+}

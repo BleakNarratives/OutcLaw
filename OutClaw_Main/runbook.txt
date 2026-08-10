@@ -1,0 +1,147 @@
+OUTCLAW RUNBOOK
+===============
+
+Purpose
+-------
+OutClaw is local-first tooling for auditing legal text, identifying citation and
+proposition mismatches, and preparing material for human review. It is not a law
+firm, legal advice, an evidence repository, or an automated filing service.
+
+Canonical location and entry point
+----------------------------------
+This directory is the canonical repository root when cloned independently. In
+the surrounding BleakNarratives workspace it is named OutClaw_Main. Run commands
+from this directory or use an absolute path to the launcher.
+
+    cd /path/to/OutClaw_Main
+    ./outclaw --help
+    ./outclaw demo --list
+
+The launcher only delegates to outclaw_cli.py. It does not install packages,
+modify the repository, or enable network access.
+
+First-run setup
+---------------
+1. Confirm Python 3.10 or newer:
+
+       python3 --version
+
+2. Create an isolated environment for optional dependencies:
+
+       python3 -m venv .venv
+       . .venv/bin/activate
+
+3. Install only the profile needed for the task:
+
+       python3 -m pip install -r requirements.txt
+       python3 -m pip install -r requirements-dashboard.txt  # optional TUI
+       python3 -m pip install -r requirements-web.txt        # optional web UI
+
+4. Verify the offline path before processing any case material:
+
+       ./outclaw demo
+       ./outclaw regression
+
+Every new machine should pass the regression check before use.
+
+Daily CLI workflow
+------------------
+Audit a draft without an LLM:
+
+    ./outclaw audit path/to/draft.txt
+
+Save machine-readable output (a blocking audit may intentionally return status 2):
+
+    ./outclaw audit path/to/draft.txt --json > audit-report.json || test $? -eq 2
+
+Render a saved report:
+
+    ./outclaw score audit-report.json
+
+Scan for citations not covered by the seed registry:
+
+    ./outclaw discover path/to/draft.txt
+
+Run the combined local pipeline:
+
+    ./outclaw enhance path/to/draft.txt
+
+Use safe-draft only after reviewing the audit and confirming the exact intent:
+
+    ./outclaw safe-draft draft_affidavit path/to/draft.txt
+
+The acknowledgment token is a single-use workflow confirmation, not an
+authentication credential. Never put it in source control, logs, or scripts.
+
+Testing and release gate
+------------------------
+Run from the repository root (the directory containing this runbook):
+
+    python3 -m py_compile outclaw_cli.py outclaw_regression.py outclaw_safety.py
+    python3 -m unittest discover -s outclaw_tests -t . -v
+    python3 outclaw_regression.py
+
+The regression runner must report 11/11 cases matched expected severity. Tests are
+offline and must not require credentials, Ollama, CourtListener, or raw case files.
+GitHub Actions runs the same baseline.
+
+Optional interfaces
+-------------------
+The CLI is the supported primary interface. Optional launchers are:
+
+    ./run_dashboard.sh
+    ./launch_web_dashboard.sh
+    ./launch_legal_scouts.sh
+
+Read each script before first use. Dashboard launchers may create .venv and may
+bind a local port. CourtListener lookup and LLM-assisted commands can access
+external services only when explicitly selected and configured.
+
+Privacy and evidence boundary
+-----------------------------
+- Never commit original arrest reports, photographs, identifiers, credentials,
+  or unredacted court records.
+- Keep raw Mel evidence outside normal development and CI workflows.
+- Use the redacted working copy only after a human privacy review; remaining case
+  numbers, dates, locations, and offense details may still be identifying.
+- Verify Git behavior before staging evidence:
+
+      git check-ignore -v OutClaw_Main/case_data/arrest_report_24-001.txt
+      git check-ignore -v OutClaw/case_data/IMG_20260731_161331236.jpg
+      git check-ignore OutClaw_Main/case_data/arrest_report_24-001.redacted.txt
+
+- Do not paste PII into issue trackers, pull requests, chat logs, or external APIs.
+See SECURITY.md for reporting and repository handling rules.
+
+Troubleshooting
+---------------
+"Permission denied" on ./outclaw:
+    Run chmod +x outclaw, then retry. The equivalent is python3 outclaw_cli.py.
+
+"ModuleNotFoundError":
+    Activate the intended .venv and install the relevant requirements profile.
+    Core audit tests should still run with the repository's available baseline.
+
+Audit returns status 2:
+    This is an audit result, not a launcher failure. Inspect the findings and
+    verify every citation and proposition against official authority.
+
+Dashboard fails to start:
+    Confirm the optional requirements are installed, inspect the selected port,
+    and use the CLI offline path as the fallback.
+
+Regression mismatch:
+    Stop. Do not file or publish generated output. Capture the failing case ID,
+    run the focused test that covers the changed module, and open a maintainer
+    issue without attaching private evidence.
+
+Maintainer checklist
+--------------------
+- [ ] Change is scoped to OutClaw_Main.
+- [ ] No raw evidence, credentials, generated databases, or tokens are staged.
+- [ ] README and runbook commands match the actual entry points.
+- [ ] py_compile passes.
+- [ ] Full unittest discovery passes.
+- [ ] Regression reports 11/11.
+- [ ] Documentation clearly marks generated legal text as requiring human review.
+- [ ] Privacy and security implications are recorded in the pull request.

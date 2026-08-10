@@ -1,0 +1,22 @@
+{
+  "project": "OutClaw",
+  "type": "legal_self_representation_tool",
+  "saas_potential": 9.5,
+  "hands_off": true,
+  "kyc_free": true,
+  "pricing_model": {
+    "suggested": ["subscription", "pay_per_use", "donation"],
+    "free_tier_friendly": true,
+    "revenue_estimate": "00–000/month (niche legal tech)"
+  },
+  "deployment": {
+    "complexity": "low",
+    "requirements": ["Flask/FastAPI", "Hugging Face Inference API"],
+    "hosting_options": ["Fly.io (free)", "Railway.app (free)", "Replit"]
+  },
+  "monetization_blocks": [
+    "Needs a simple frontend (Streamlit or Telegram bot)",
+    "Marketing to DIY legal communities"
+  ],
+  "competitive_edge": "No KYC, open-source alternative to expensive legal AI tools"
+}

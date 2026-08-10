@@ -1,0 +1,11 @@
+{
+  "complaint_id": "JC-20260805-153246",
+  "judge_name": "Jane Smith",
+  "court": "U.S. District Court for the Western District of Oklahoma",
+  "jurisdiction": "federal",
+  "case_number": "CIV-24-12345",
+  "complainant": "John Doe",
+  "generated_date": "2026-08-05T15:32:46.110238",
+  "evidence_count": 3,
+  "high_severity_count": 3
+}

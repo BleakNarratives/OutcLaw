@@ -1,0 +1,9 @@
+EVIDENCE SUMMARY
+
+Total Incidents: 1
+High Severity: 0
+Medium Severity: 1
+Low Severity: 0
+
+MISCONDUCT TYPES:
+- Bias and Prejudice: 1

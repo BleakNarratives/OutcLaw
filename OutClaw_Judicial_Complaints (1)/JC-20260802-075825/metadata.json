@@ -1,0 +1,11 @@
+{
+  "complaint_id": "JC-20260802-075825",
+  "judge_name": "Jane Smith",
+  "court": "U.S. District Court",
+  "jurisdiction": "federal",
+  "case_number": "CIV-24-12345",
+  "complainant": "John Doe",
+  "generated_date": "2026-08-02T07:58:25.443077",
+  "evidence_count": 1,
+  "high_severity_count": 1
+}

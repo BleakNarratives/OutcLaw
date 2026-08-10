@@ -1,0 +1,93 @@
+{
+  "timestamp": "2026-08-07T00:47:25.769892",
+  "scout_type": "case_law",
+  "research_queries": [
+    {
+      "type": "core_issue",
+      "query": "Implied warranty habitability landlord's statutory duty repair 118",
+      "purpose": "Find cases directly on point"
+    },
+    {
+      "type": "jurisdictional",
+      "query": "Implied warranty habitability landlord's statutory duty repair 118 Oklahoma",
+      "purpose": "Find Oklahoma precedent"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "warranty habitability Oklahoma",
+      "purpose": "Find cases involving warranty of habitability"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "landlord duty repair Oklahoma",
+      "purpose": "Find cases involving landlord duty to repair"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "security deposit Oklahoma",
+      "purpose": "Find cases involving security deposit"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "retaliation Oklahoma",
+      "purpose": "Find cases involving retaliation"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "code enforcement Oklahoma",
+      "purpose": "Find cases involving code enforcement"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "Oklahoma Open Records",
+      "purpose": "Find cases involving Oklahoma Open Records"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "Tulsa County Oklahoma",
+      "purpose": "Find cases involving Tulsa County"
+    },
+    {
+      "type": "opposition",
+      "query": "defense Implied warranty habitability landlord's statutory duty repair 118",
+      "purpose": "Anticipate opposing arguments"
+    }
+  ],
+  "cases_found": [],
+  "legal_arguments": [],
+  "flags": [
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests"
+  ],
+  "summary": "\n================================================================================\nCASE LAW RESEARCH SUMMARY\n================================================================================\n\nIssue Researched: Implied warranty of habitability and landlord's statutory duty to repair under 41 O.S. \u00a7 118 in a Tulsa County small-claims action\nResearch Date: 2026-08-06 19:47:38\n\nRESULTS:\n- Total Cases Found: 0\n- Sources: \n- Courts: \n- Date Range: None to None\n\nKEY HOLDINGS (0):\n\nWINNING ARGUMENTS (0):\n\nADVERSE AUTHORITY TO DISTINGUISH (0):\n\n================================================================================\n",
+  "analysis": {
+    "total_cases": 0,
+    "sources": {},
+    "courts": {},
+    "date_range": {
+      "earliest": null,
+      "latest": null
+    },
+    "key_holdings": [],
+    "winning_arguments": [],
+    "adverse_authority": []
+  }
+}

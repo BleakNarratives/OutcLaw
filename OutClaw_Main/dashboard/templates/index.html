@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OutClaw — Check Your Court Papers</title>
+<link href="https://fonts.googleapis.com/css2?family=OpenDyslexic&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea; --card:#ffffff; --ink:#1a1a1a; --muted:#5c5c5c;
+  --accent:#1e6f5c; --accent-dark:#155a49; --accent-ink:#ffffff;
+  --ring:#e8b84b; --line:#d9d2c4;
+  --green:#1e7d46; --green-bg:#e6f4ec;
+  --yellow:#b7791f; --yellow-bg:#fdf3e0;
+  --red:#b3261e; --red-bg:#fdecea;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Atkinson Hyperlegible', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background:var(--bg); color:var(--ink); font-size:18px; line-height:1.65;
+  min-height:100vh;
+}
+body.large{font-size:22px;}
+body.xl{font-size:26px;}
+body.dyslexic{font-family:'OpenDyslexic', monospace;}
+body.high-contrast{--bg:#000;--card:#fff;--ink:#000;--muted:#000;--accent:#ffcc00;--accent-dark:#000;--accent-ink:#000;--ring:#fff;--line:#000;}
+
+/* Accessibility bar */
+.a11y{position:fixed;top:0;left:0;right:0;background:#2a2a2a;color:#fff;
+  display:flex;gap:8px;align-items:center;padding:8px 14px;z-index:1000;flex-wrap:wrap;}
+.a11y span{font-size:.85em;letter-spacing:.5px;color:#ffd76a;margin-right:4px;font-weight:700;}
+.a11y button{background:transparent;border:2px solid #ffd76a;color:#ffd76a;font-weight:700;
+  font-size:.8em;padding:5px 12px;border-radius:6px;cursor:pointer;}
+.a11y button:hover,.a11y button.active{background:#ffd76a;color:#000;}
+.a11y button:focus{outline:3px solid #fff;outline-offset:1px;}
+
+.wrap{max-width:860px;margin:0 auto;padding:24px 18px 80px;}
+
+/* Header */
+.hero{text-align:center;margin:56px 0 34px;}
+.hero .seal{font-size:56px;line-height:1;}
+.hero h1{font-size:2.3em;margin:10px 0 6px;letter-spacing:.5px;}
+.hero p{color:var(--muted);font-size:1.15em;max-width:600px;margin:0 auto;}
+
+/* Main card */
+.card{background:var(--card);border-radius:20px;padding:34px 28px;
+  box-shadow:0 8px 40px rgba(0,0,0,.08);border:1px solid var(--line);margin-bottom:22px;}
+
+/* Drop zone — the single biggest element */
+.drop{border:4px dashed #b9b0a0;border-radius:18px;padding:52px 24px;text-align:center;
+  background:#faf8f3;cursor:pointer;transition:all .2s;}
+.drop:hover,.drop.over{background:#f0fbe7;border-color:var(--accent);transform:scale(1.01);}
+.drop:focus{outline:4px solid var(--ring);outline-offset:3px;}
+.drop .icon{font-size:52px;}
+.drop h2{font-size:1.7em;margin:10px 0 6px;}
+.drop p{color:var(--muted);font-size:1.05em;}
+.drop .files{font-size:1.05em;color:var(--accent-dark);font-weight:700;margin-top:10px;}
+.drop input{display:none;}
+
+/* The ONE button */
+.big-btn{display:block;width:100%;margin-top:26px;padding:26px 20px;font-size:1.7em;
+  font-weight:700;color:var(--accent-ink);background:var(--accent);border:none;border-radius:16px;
+  cursor:pointer;box-shadow:0 6px 20px rgba(30,111,92,.35);transition:all .15s;}
+.big-btn:hover:not(:disabled){background:var(--accent-dark);transform:translateY(-2px);}
+.big-btn:focus{outline:4px solid var(--ring);outline-offset:3px;}
+.big-btn:disabled{opacity:.4;cursor:wait;}
+.big-btn .sub{display:block;font-size:.5em;font-weight:400;opacity:.85;margin-top:4px;}
+
+/* Loading */
+.loading{display:none;text-align:center;padding:30px 0;}
+.loading.show{display:block;}
+.spinner{width:64px;height:64px;border:7px solid var(--line);border-top-color:var(--accent);
+  border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 18px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading p{font-size:1.3em;font-weight:700;color:var(--accent-dark);}
+.loading small{color:var(--muted);display:block;margin-top:6px;}
+
+/* Error */
+.error{display:none;background:var(--red-bg);color:var(--red);border:3px solid var(--red);
+  border-radius:14px;padding:20px;margin-top:22px;font-weight:700;font-size:1.1em;}
+.error.show{display:block;}
+
+/* Result — the giant traffic light */
+.result{display:none;margin-top:22px;}
+.result.show{display:block;}
+.verdict{border-radius:18px;padding:34px 28px;text-align:center;color:#fff;
+  box-shadow:0 10px 34px rgba(0,0,0,.18);}
+.verdict .light{font-size:64px;line-height:1;}
+.verdict h2{font-size:2em;margin:12px 0 10px;}
+.verdict p{font-size:1.15em;max-width:640px;margin:0 auto;opacity:.96;}
+.verdict.red{background:var(--red);}
+.verdict.yellow{background:var(--yellow);}
+.verdict.green{background:var(--green);}
+.counts{display:flex;gap:12px;justify-content:center;margin-top:18px;flex-wrap:wrap;}
+.counts .chip{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+  padding:6px 16px;border-radius:999px;font-weight:700;font-size:.95em;}
+
+/* Findings list — plain sentences */
+.findings{margin-top:20px;}
+.finding{background:var(--card);border-left:8px solid var(--line);border-radius:12px;
+  padding:16px 18px;margin-bottom:14px;box-shadow:0 3px 14px rgba(0,0,0,.05);}
+.finding.red{border-left-color:var(--red);}
+.finding.yellow{border-left-color:var(--yellow);}
+.finding.green{border-left-color:var(--green);}
+.finding .sev{font-size:.82em;font-weight:700;letter-spacing:.4px;text-transform:uppercase;}
+.finding.red .sev{color:var(--red);}
+.finding.yellow .sev{color:var(--yellow);}
+.finding.green .sev{color:var(--green);}
+.finding .what{font-size:1.15em;font-weight:700;margin:4px 0;}
+.finding .cite{font-size:.95em;color:var(--muted);font-style:italic;margin-top:4px;}
+.finding .sentence{font-size:.92em;color:var(--muted);margin-top:6px;}
+.finding .file{font-size:.85em;color:var(--muted);margin-top:6px;font-weight:700;}
+
+/* Footnote — honest, non-scary */
+.note{margin-top:26px;color:var(--muted);font-size:.95em;text-align:center;padding:0 12px;}
+.note b{color:var(--ink);}
+footer{text-align:center;color:var(--muted);margin-top:40px;font-size:.9em;}
+footer .status{font-size:.82em;margin-top:8px;}
+
+@media(max-width:640px){
+  .wrap{padding:16px 12px 60px;}
+  .hero{margin-top:84px;}
+  .card{padding:24px 18px;}
+  .drop{padding:36px 16px;}
+  .big-btn{font-size:1.4em;}
+}
+</style>
+</head>
+<body>
+<a href="#main" class="a11y" style="text-decoration:none;top:-60px;position:absolute;" onfocus="this.style.top='0'">Skip to content</a>
+
+<div class="a11y" role="toolbar" aria-label="Viewing help">
+  <span>VIEWING HELP:</span>
+  <button id="contrastBtn" aria-pressed="false">High Contrast</button>
+  <button id="textBtn" aria-pressed="false">Bigger Text</button>
+  <button id="dyslexicBtn" aria-pressed="false">Easy-Read Font</button>
+</div>
+
+<main id="main" class="wrap">
+  <header class="hero">
+    <div class="seal" aria-hidden="true">⚖️</div>
+    <h1>OutClaw</h1>
+    <p>Checks your court papers for problems before you file them.
+       Your documents never leave this computer.</p>
+  </header>
+
+  <section class="card" aria-label="Check your papers">
+    <div class="drop" id="drop" role="button" tabindex="0"
+         aria-label="Add your documents. Click here or drag files in.">
+      <div class="icon" aria-hidden="true">📄</div>
+      <h2>Add your papers</h2>
+      <p>Click here, or drag your files in.<br>PDF and text files work best.</p>
+      <div class="files" id="fileList"></div>
+      <input type="file" id="fileInput" accept=".pdf,.txt,.md" multiple>
+    </div>
+
+    <button class="big-btn" id="goBtn" disabled aria-label="Check my papers for problems">
+      ✅ Check My Papers
+      <span class="sub">Takes about a minute. Free.</span>
+    </button>
+
+    <div class="loading" id="loading" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Checking your papers…</p>
+      <small>Please wait. Do not close this window.</small>
+    </div>
+
+    <div class="error" id="error" role="alert"></div>
+
+    <div class="result" id="result" aria-live="polite">
+      <div class="verdict" id="verdictBox">
+        <div class="light" id="verdictLight" aria-hidden="true"></div>
+        <h2 id="verdictTitle"></h2>
+        <p id="verdictMsg"></p>
+        <div class="counts" id="verdictCounts"></div>
+      </div>
+      <div class="findings" id="findings"></div>
+    </div>
+  </section>
+
+  <p class="note"><b>Important:</b> OutClaw is a checking tool, not a lawyer.
+    It looks for common citation problems. Before you file anything that
+    matters, have a real attorney or a free legal-aid clinic look at it too.</p>
+
+  <footer>
+    <p>OutClaw · Free · Private · Made for people who cannot afford an attorney</p>
+    <p style="margin-top:10px;"><a href="/guide" style="color:var(--accent);font-weight:700;text-decoration:none;border-bottom:3px solid var(--ring);padding-bottom:2px;">📘 New here? Read the simple guide</a></p>
+    <div class="status" id="statusLine"></div>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var files = [];
+
+  // ---- Accessibility (saved between visits) ----
+  function save(){try{localStorage.setItem("oc_prefs", JSON.stringify(prefs));}catch(e){}}
+  var prefs = {contrast:false, text:0, dys:false};
+  try{var saved=JSON.parse(localStorage.getItem("oc_prefs")||"{}");
+      prefs={contrast:!!saved.contrast,text:saved.text||0,dys:!!saved.dys};}catch(e){}
+  function applyPrefs(){
+    document.body.classList.toggle("high-contrast", prefs.contrast);
+    document.body.classList.toggle("large", prefs.text===1);
+    document.body.classList.toggle("xl", prefs.text===2);
+    document.body.classList.toggle("dyslexic", prefs.dys);
+    document.getElementById("contrastBtn").classList.toggle("active",prefs.contrast);
+    document.getElementById("dyslexicBtn").classList.toggle("active",prefs.dys);
+    document.getElementById("textBtn").textContent =
+      prefs.text===0?"Bigger Text":prefs.text===1?"Extra Big":"Normal Size";
+  }
+  document.getElementById("contrastBtn").addEventListener("click",function(){
+    prefs.contrast=!prefs.contrast;applyPrefs();save();});
+  document.getElementById("dyslexicBtn").addEventListener("click",function(){
+    prefs.dys=!prefs.dys;applyPrefs();save();});
+  document.getElementById("textBtn").addEventListener("click",function(){
+    prefs.text=(prefs.text+1)%3;applyPrefs();save();});
+  applyPrefs();
+
+  // ---- File picking ----
+  var drop=document.getElementById("drop"),
+      input=document.getElementById("fileInput"),
+      goBtn=document.getElementById("goBtn"),
+      fileList=document.getElementById("fileList"),
+      loading=document.getElementById("loading"),
+      errorBox=document.getElementById("error"),
+      resultBox=document.getElementById("result");
+
+  function setFiles(newFiles){
+    files=Array.prototype.slice.call(newFiles||[]);
+    if(files.length){
+      fileList.textContent=files.length+" file(s) ready: "+
+        files.map(function(f){return f.name;}).join(", ");
+      goBtn.disabled=false;
+    }else{
+      fileList.textContent="";
+      goBtn.disabled=true;
+    }
+  }
+  drop.addEventListener("click",function(){input.click();});
+  drop.addEventListener("keydown",function(e){
+    if(e.key==="Enter"||e.key===" "){e.preventDefault();input.click();}});
+  drop.addEventListener("dragover",function(e){e.preventDefault();drop.classList.add("over");});
+  drop.addEventListener("dragleave",function(){drop.classList.remove("over");});
+  drop.addEventListener("drop",function(e){
+    e.preventDefault();drop.classList.remove("over");setFiles(e.dataTransfer.files);});
+  input.addEventListener("change",function(){setFiles(input.files);});
+
+  // ---- The one action ----
+  goBtn.addEventListener("click",async function(){
+    if(!files.length)return;
+    goBtn.disabled=true;loading.classList.add("show");
+    errorBox.classList.remove("show");resultBox.classList.remove("show");
+    document.getElementById("result").scrollIntoView({behavior:"smooth",block:"center"});
+
+    var fd=new FormData();
+    files.forEach(function(f){fd.append("files",f);});
+
+    try{
+      var resp=await fetch("/api/audit-case",{method:"POST",body:fd});
+      var data=await resp.json();
+      if(!data.success) throw new Error(data.error||"Something went wrong.");
+      showResult(data.data);
+    }catch(err){
+      errorBox.textContent="❌ "+err.message;
+      errorBox.classList.add("show");
+    }finally{
+      loading.classList.remove("show");
+      goBtn.disabled=files.length===0;
+    }
+  });
+
+  // ---- Render the giant verdict ----
+  function showResult(d){
+    var v=d.verdict||{level:"yellow",title:"Review",message:""};
+    var box=document.getElementById("verdictBox");
+    box.className="verdict "+v.level;
+    document.getElementById("verdictLight").textContent=
+      v.level==="green"?"🟢":v.level==="yellow"?"🟡":"🔴";
+    document.getElementById("verdictTitle").textContent=v.title;
+    document.getElementById("verdictMsg").textContent=v.message;
+
+    var counts=d.counts||{high:0,medium:0,ok:0};
+    var chips="";
+    if(counts.high) chips+='<span class="chip">🔴 '+counts.high+" serious</span>";
+    if(counts.medium) chips+='<span class="chip">🟡 '+counts.medium+" possible</span>";
+    if(counts.ok) chips+='<span class="chip">🟢 '+counts.ok+" fine</span>";
+    document.getElementById("verdictCounts").innerHTML=chips;
+
+    var list=document.getElementById("findings");
+    var plain=d.plain_findings||[];
+    if(!plain.length){
+      list.innerHTML='<p style="text-align:center;color:var(--muted);margin-top:20px;">'
+        +"No citation issues were found in "+(d.file_count||1)
+        +' file(s). A qualified person should still review before filing.</p>';
+    }else{
+      list.innerHTML='<h3 style="margin:6px 0 14px;font-size:1.3em;">What OutClaw found</h3>'+
+        plain.map(function(f){
+          return '<div class="finding '+f.color+'">'+
+            '<div class="sev">'+f.severity_label+'</div>'+
+            '<div class="what">'+escapeHtml(f.what)+'</div>'+
+            (f.citation?'<div class="cite">'+escapeHtml(f.citation)+'</div>':"")+
+            (f.sentence?'<div class="sentence">“'+escapeHtml(f.sentence)+'”</div>':"")+
+            (f.file?'<div class="file">📁 '+escapeHtml(f.file)+'</div>':"")+
+            '</div>';
+        }).join("");
+    }
+    resultBox.classList.add("show");
+    resultBox.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  function escapeHtml(s){
+    return String(s||"").replace(/[&<>"']/g,function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});
+  }
+
+  // ---- Status line (silent, non-technical) ----
+  fetch("/api/status").then(function(r){return r.json();}).then(function(d){
+    var s=d.data||{};
+    var line=document.getElementById("statusLine");
+    if(s.cascade && s.cascade.enabled){
+      line.textContent="AI helper: ON ("+s.cascade.providers_ready.length+" free service(s) ready). Everything stays private.";
+    }else{
+      line.textContent="AI helper: OFF — using built-in checks only. That is fine and still useful.";
+    }
+  }).catch(function(){});
+})();
+</script>
+</body>
+</html>

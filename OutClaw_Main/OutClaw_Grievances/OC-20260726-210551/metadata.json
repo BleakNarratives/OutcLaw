@@ -1,0 +1,17 @@
+{
+  "grievance_id": "OC-20260726-210551",
+  "attorney_name": "John Doe",
+  "attorney_bar_number": "12345",
+  "state": "oklahoma",
+  "complainant": "Jane Smith",
+  "case_number": "CIV-2024-12345",
+  "generated_date": "2026-07-26T21:05:51.173357",
+  "evidence_count": 2,
+  "high_severity_count": 2,
+  "estimated_defense_cost": 14000,
+  "rule_violations": [
+    "ORPC 3.3(a)(1) - False Statements to Tribunal",
+    "ORPC 8.4(c) - Dishonesty, Fraud, Deceit, or Misrepresentation",
+    "5 O.S. \u00a7 7 - Attorney Oath: Duty to maintain respect due to courts of justice"
+  ]
+}

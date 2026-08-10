@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>OutClaw — AI Legal Tools for Pro Se Fighters</title>
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{background:#0a0a0a;color:#e8e8e8;font-family:'Courier New',monospace;margin:0}
+      header{padding:2rem;border-bottom:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center}
+      .logo{font-size:1.5rem;font-weight:bold;color:#00ff88}
+      .hero{max-width:700px;margin:4rem auto;padding:0 2rem;text-align:center}
+      h1{font-size:2.5rem;line-height:1.2;margin-bottom:1.5rem}
+      h1 span{color:#00ff88}
+      .sub{color:#aaa;font-size:1.1rem;line-height:1.7;margin-bottom:2.5rem}
+      .tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:3rem}
+      .tool{background:#111;border:1px solid #222;border-radius:6px;padding:1.2rem}
+      .tool-icon{font-size:1.5rem;margin-bottom:0.5rem}
+      .tool h3{font-size:0.9rem;color:#00ff88;margin-bottom:0.3rem}
+      .tool p{font-size:0.8rem;color:#666}
+      .kofi-wrap{margin:2rem 0}
+      .kofi-wrap p{color:#aaa;font-size:0.9rem;margin-bottom:1rem}
+      .auth-section{background:#111;border:1px solid #222;border-radius:8px;padding:2rem;text-align:left}
+      .auth-section h2{color:#00ff88;margin-bottom:1.5rem;font-size:1.2rem}
+      input{width:100%;background:#0a0a0a;border:1px solid #333;color:#e8e8e8;padding:0.75rem;margin-bottom:1rem;border-radius:4px}
+      input:focus{outline:none;border-color:#00ff88}
+      .btn{width:100%;background:#00ff88;color:#0a0a0a;border:none;padding:0.85rem;font-weight:bold;border-radius:4px;cursor:pointer}
+      .btn:hover{opacity:0.85}
+      .msg{padding:0.75rem;border-radius:4px;margin-bottom:1rem;font-size:0.85rem;display:none}
+      .msg.ok{background:#0a2a1a;border:1px solid #00ff88;color:#00ff88}
+      .msg.err{background:#2a0a0a;border:1px solid #ff6b6b;color:#ff6b6b}
+      .token-box{background:#0a0a0a;border:1px solid #333;border-radius:4px;padding:1rem;margin-top:1rem;font-size:0.8rem;word-break:break-all;display:none;color:#00ff88}
+      .toggle{color:#555;font-size:0.85rem;margin-top:1rem;cursor:pointer}
+      .toggle span{color:#00ff88;cursor:pointer}
+      footer{text-align:center;padding:3rem 1rem;color:#333;font-size:0.8rem}
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo">⚖ OutClaw</div>
+    <div style="color:#555;font-size:0.8rem">AI Legal Tools</div>
+</header>
+<div class="hero">
+    <h1>Fight Back With <span>AI Legal Tools</span></h1>
+    <p class="sub">IRAC analysis, FOIA requests, grievance drafts, and case scoring for pro se fighters.</p>
+    <div class="tools">
+      <div class="tool"><div class="tool-icon">⚖️</div><h3>IRAC Analysis</h3><p>Issue, Rule, Application, Conclusion.</p></div>
+      <div class="tool"><div class="tool-icon">📁</div><h3>FOIA Drafts</h3><p>Agency-ready requests.</p></div>
+      <div class="tool"><div class="tool-icon">✊</div><h3>Grievances</h3><p>Formal administrative complaints.</p></div>
+      <div class="tool"><div class="tool-icon">⚡</div><h3>Case Scoring</h3><p>Strength evaluation.</p></div>
+    </div>
+    <div class="kofi-wrap">
+      <p>Support OutClaw to unlock full access — then email your Ko-fi receipt to activate your account instantly.</p>
+      <a href="https://ko-fi.com/outclaw" target="_blank">
+        <img src="https://storage.ko-fi.com/cdn/kofi2.png?v=3" alt="Support on Ko-fi"/>
+      </a>
+    </div>
+    <div class="auth-section">
+      <h2 id="form-title">Create Account</h2>
+      <div class="msg" id="msg"></div>
+      <input type="email" id="email" placeholder="your@email.com"/>
+      <input type="password" id="password" placeholder="password"/>
+      <button class="btn" id="submit-btn" onclick="submitAuth()">Register</button>
+      <div class="toggle">Already have an account? <span onclick="toggleMode()">Sign In</span></div>
+      <div class="token-box" id="token-box"></div>
+    </div>
+</div>
+<footer>OutClaw — built for people who fight their own battles.</footer>
+<script>
+let mode = 'register';
+function toggleMode() {
+    mode = mode === 'register' ? 'login' : 'register';
+    document.getElementById('form-title').textContent = mode === 'register' ? 'Create Account' : 'Sign In';
+    document.getElementById('submit-btn').textContent = mode === 'register' ? 'Register' : 'Sign In';
+}
+function showMsg(text, type) {
+    const el = document.getElementById('msg');
+    el.textContent = text; el.className = 'msg ' + type; el.style.display = 'block';
+}
+async function submitAuth() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    if (!email || !password) { showMsg('Email and password required', 'err'); return; }
+    const endpoint = mode === 'register' ? '/api/auth/register' : '/api/auth/login';
+    try {
+        const r = await fetch(endpoint, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({email, password})
+        });
+        const data = await r.json();
+        if (!r.ok) { showMsg(data.detail || 'Error', 'err'); return; }
+        showMsg(mode === 'register' ? 'Account created! Save your token below.' : 'Signed in successfully!', 'ok');
+        const tb = document.getElementById('token-box');
+        tb.textContent = 'Bearer ' + data.token;
+        tb.style.display = 'block';
+        localStorage.setItem('outclaw_token', data.token);
+    } catch(e) { showMsg('Network error', 'err'); }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OutClaw — A Simple Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=OpenDyslexic&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea; --card:#ffffff; --ink:#1a1a1a; --muted:#5c5c5c;
+  --accent:#1e6f5c; --accent-dark:#155a49; --accent-ink:#ffffff;
+  --ring:#e8b84b; --line:#d9d2c4;
+  --green:#1e7d46; --green-bg:#e6f4ec;
+  --yellow:#b7791f; --yellow-bg:#fdf3e0;
+  --red:#b3261e; --red-bg:#fdecea;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Atkinson Hyperlegible', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background:var(--bg); color:var(--ink); font-size:18px; line-height:1.7;
+  min-height:100vh;
+}
+body.large{font-size:22px;}
+body.xl{font-size:26px;}
+body.dyslexic{font-family:'OpenDyslexic', monospace;}
+body.high-contrast{--bg:#000;--card:#fff;--ink:#000;--muted:#000;--accent:#ffcc00;--accent-dark:#000;--accent-ink:#000;--ring:#fff;--line:#000;}
+
+/* Accessibility bar (same as the main page) */
+.a11y{position:fixed;top:0;left:0;right:0;background:#2a2a2a;color:#fff;
+  display:flex;gap:8px;align-items:center;padding:8px 14px;z-index:1000;flex-wrap:wrap;}
+.a11y span{font-size:.85em;letter-spacing:.5px;color:#ffd76a;margin-right:4px;font-weight:700;}
+.a11y button{background:transparent;border:2px solid #ffd76a;color:#ffd76a;font-weight:700;
+  font-size:.8em;padding:5px 12px;border-radius:6px;cursor:pointer;}
+.a11y button:hover,.a11y button.active{background:#ffd76a;color:#000;}
+.a11y button:focus{outline:3px solid #fff;outline-offset:1px;}
+
+.wrap{max-width:820px;margin:0 auto;padding:26px 18px 80px;}
+
+/* Header */
+.hero{text-align:center;margin:64px 0 30px;}
+.hero .seal{font-size:52px;line-height:1;}
+.hero h1{font-size:2.1em;margin:10px 0 6px;letter-spacing:.5px;}
+.hero p{color:var(--muted);font-size:1.12em;max-width:620px;margin:0 auto;}
+
+/* Sections */
+section{margin-bottom:28px;}
+.card{background:var(--card);border-radius:18px;padding:26px 26px;
+  box-shadow:0 6px 28px rgba(0,0,0,.07);border:1px solid var(--line);}
+.card h2{font-size:1.45em;margin-bottom:12px;color:var(--accent-dark);}
+.card h2 .num{display:inline-block;background:var(--accent);color:var(--accent-ink);
+  width:34px;height:34px;line-height:34px;text-align:center;border-radius:50%;
+  font-size:.75em;margin-right:10px;vertical-align:2px;}
+.card p{margin-bottom:12px;}
+.card p:last-child{margin-bottom:0;}
+.card ul,.card ol{margin:0 0 12px 1.4em;}
+.card li{margin-bottom:8px;}
+.card li:last-child{margin-bottom:0;}
+.card b{color:var(--ink);}
+
+/* Color boxes — the three verdicts */
+.verdicts{display:grid;grid-template-columns:1fr;gap:16px;}
+.vbox{border-radius:16px;padding:20px 22px;border:3px solid;display:flex;gap:16px;align-items:flex-start;}
+.vbox .light{font-size:40px;line-height:1;}
+.vbox .txt h3{font-size:1.25em;margin-bottom:4px;}
+.vbox .txt p{margin-bottom:6px;}
+.vbox .txt p:last-child{margin-bottom:0;}
+.vbox .txt .do{font-weight:700;}
+.vbox.red{background:var(--red-bg);border-color:var(--red);}
+.vbox.red h3{color:var(--red);}
+.vbox.yellow{background:var(--yellow-bg);border-color:var(--yellow);}
+.vbox.yellow h3{color:var(--yellow);}
+.vbox.green{background:var(--green-bg);border-color:var(--green);}
+.vbox.green h3{color:var(--green);}
+
+/* Notice boxes */
+.notice{border-radius:14px;padding:18px 22px;border:2px dashed var(--accent);
+  background:#f0fbe7;margin-bottom:16px;}
+.notice b{color:var(--accent-dark);}
+.warn{border-radius:14px;padding:18px 22px;border:2px solid var(--yellow);
+  background:var(--yellow-bg);margin-bottom:16px;}
+.warn b{color:var(--yellow);}
+
+/* Back link */
+.back{display:block;text-align:center;margin:30px 0 10px;font-size:1.15em;font-weight:700;}
+.back a{color:var(--accent);text-decoration:none;border-bottom:3px solid var(--ring);padding-bottom:2px;}
+.back a:hover{color:var(--accent-dark);}
+
+footer{text-align:center;color:var(--muted);margin-top:34px;font-size:.9em;}
+
+@media(max-width:640px){
+  .wrap{padding:16px 12px 60px;}
+  .hero{margin-top:80px;}
+  .card{padding:20px 16px;}
+}
+</style>
+</head>
+<body>
+<a href="#main" class="a11y" style="text-decoration:none;top:-60px;position:absolute;" onfocus="this.style.top='0'">Skip to content</a>
+
+<div class="a11y" role="toolbar" aria-label="Viewing help">
+  <span>VIEWING HELP:</span>
+  <button id="contrastBtn" aria-pressed="false">High Contrast</button>
+  <button id="textBtn" aria-pressed="false">Bigger Text</button>
+  <button id="dyslexicBtn" aria-pressed="false">Easy-Read Font</button>
+</div>
+
+<main id="main" class="wrap">
+  <header class="hero">
+    <div class="seal" aria-hidden="true">📘</div>
+    <h1>OutClaw — A Simple Guide</h1>
+    <p>Everything on one page. No complicated words. If you get stuck, start here.</p>
+  </header>
+
+  <!-- 1. WHAT THIS IS -->
+  <section>
+    <div class="card">
+      <h2><span class="num">1</span>What OutClaw does</h2>
+      <p><b>OutClaw checks your court papers for problems before you file them.</b></p>
+      <p>Judges expect the cases and laws you mention in your papers to be real, and to say what you say they say. Sometimes a paper has a mistake in it — a case that does not exist, a case that has been overruled, or a law that is being used to mean the opposite of what it really means.</p>
+      <p>OutClaw reads your papers and looks for those kinds of problems. It cannot tell you whether you will win. It is a checking tool — like spell-check, but for the facts in your court papers.</p>
+    </div>
+  </section>
+
+  <!-- 2. HOW TO USE IT -->
+  <section>
+    <div class="card">
+      <h2><span class="num">2</span>How to use it</h2>
+      <p>There is one page and one big button. Here is the whole process:</p>
+      <ol>
+        <li><b>Add your papers.</b> Click the box in the middle of the page, then pick the files from your computer. (You can also drag them onto the box.) PDF files and plain text files work best.</li>
+        <li><b>Press the big green button</b> that says <b>“Check My Papers.”</b></li>
+        <li><b>Wait about a minute.</b> Do not close the window. A circle will spin while it works.</li>
+        <li><b>Read the answer.</b> You will get one of three results — red, yellow, or green — with a plain-English explanation under it.</li>
+      </ol>
+      <p>That is it. You can check as many papers as you want, one at a time or several at once.</p>
+    </div>
+  </section>
+
+  <!-- 3. THE COLORS -->
+  <section>
+    <div class="card">
+      <h2><span class="num">3</span>What the colors mean</h2>
+      <p>Think of it like a traffic light for your papers.</p>
+      <div class="verdicts">
+        <div class="vbox red">
+          <div class="light" aria-hidden="true">🔴</div>
+          <div class="txt">
+            <h3>Red — stop</h3>
+            <p>OutClaw found a <b>serious problem</b>. If you file these papers the way they are, it could hurt your case.</p>
+          </div>
+        </div>
+        <div class="vbox yellow">
+          <div class="light" aria-hidden="true">🟡</div>
+          <div class="txt">
+            <h3>Yellow — look closer</h3>
+            <p>OutClaw found <b>possible problems</b>. They might be fixable, but a judge could see them as mistakes.</p>
+          </div>
+        </div>
+        <div class="vbox green">
+          <div class="light" aria-hidden="true">🟢</div>
+          <div class="txt">
+            <h3>Green — no problems found</h3>
+            <p>OutClaw did not find citation problems in these papers. This is <b>not a guarantee</b> — it means nothing stood out to the check.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. WHAT TO DO -->
+  <section>
+    <div class="card">
+      <h2><span class="num">4</span>What to do with each result</h2>
+
+      <div class="vbox red">
+        <div class="light" aria-hidden="true">🔴</div>
+        <div class="txt">
+          <h3>If you got red</h3>
+          <p><b>Do not file these papers yet.</b></p>
+          <p>Read the list of problems under the big result. Each one is written in plain words, with the exact sentence from your papers and the case or law it is about.</p>
+          <p class="do">What to do: Before you file, fix each problem or have a real attorney (or a free legal-aid clinic) look at it. There is help available that costs nothing — many courthouses and law libraries can point you to it.</p>
+        </div>
+      </div>
+
+      <div style="height:14px" aria-hidden="true"></div>
+
+      <div class="vbox yellow">
+        <div class="light" aria-hidden="true">🟡</div>
+        <div class="txt">
+          <h3>If you got yellow</h3>
+          <p><b>Review the items before filing.</b></p>
+          <p>The problems may be small and fixable — like a citation that does not quite support the sentence. The page tells you which sentences to look at.</p>
+          <p class="do">What to do: Look at each flagged sentence. Fix what you can. If you are not sure whether something is a real problem, show it to someone qualified before you file.</p>
+        </div>
+      </div>
+
+      <div style="height:14px" aria-hidden="true"></div>
+
+      <div class="vbox green">
+        <div class="light" aria-hidden="true">🟢</div>
+        <div class="txt">
+          <h3>If you got green</h3>
+          <p><b>Nothing stood out.</b></p>
+          <p class="do">What to do: Green does not mean “perfect.” It means OutClaw did not find citation problems. If this is an important filing, it is still a good idea to have a qualified person review it before you submit it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. SPECIAL CASE -->
+  <section>
+    <div class="card">
+      <h2><span class="num">5</span>If it says your papers could not be read</h2>
+      <p>Sometimes OutClaw cannot open a file — for example if a PDF is damaged or is just a scanned picture with no text in it. When that happens, OutClaw will <b>not</b> pretend everything is fine. It will tell you clearly that it could not check that file.</p>
+      <p><b>What to do:</b> Open that file yourself, save it again (as a PDF or plain text), and try again. Do not file anything that has not been checked.</p>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <section>
+    <div class="notice">
+      <b>Your papers stay on your computer.</b> OutClaw runs on the machine you are using right now. Nothing you check is uploaded or shared — unless someone turns on the optional AI helper (which is off by default, and only ever uses free services you choose).
+    </div>
+  </section>
+
+  <!-- IMPORTANT -->
+  <section>
+    <div class="warn">
+      <b>Important:</b> OutClaw is a checking tool, <b>not a lawyer</b>. It looks for common citation problems. It cannot give legal advice, and it cannot tell you whether you will win or lose. Before you file anything that matters, have a real attorney or a free legal-aid clinic look at it too. You do not have to face this alone — free help exists in every state.
+    </div>
+  </section>
+
+  <div class="back">
+    <a href="/">⬅ Back to checking my papers</a>
+  </div>
+
+  <footer>
+    <p>OutClaw · Free · Private · Made for people who cannot afford an attorney</p>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  function save(){try{localStorage.setItem("oc_prefs", JSON.stringify(prefs));}catch(e){}}
+  var prefs = {contrast:false, text:0, dys:false};
+  try{var saved=JSON.parse(localStorage.getItem("oc_prefs")||"{}");
+      prefs={contrast:!!saved.contrast,text:saved.text||0,dys:!!saved.dys};}catch(e){}
+  function applyPrefs(){
+    document.body.classList.toggle("high-contrast", prefs.contrast);
+    document.body.classList.toggle("large", prefs.text===1);
+    document.body.classList.toggle("xl", prefs.text===2);
+    document.body.classList.toggle("dyslexic", prefs.dys);
+    document.getElementById("contrastBtn").classList.toggle("active",prefs.contrast);
+    document.getElementById("dyslexicBtn").classList.toggle("active",prefs.dys);
+    document.getElementById("textBtn").textContent =
+      prefs.text===0?"Bigger Text":prefs.text===1?"Extra Big":"Normal Size";
+  }
+  document.getElementById("contrastBtn").addEventListener("click",function(){
+    prefs.contrast=!prefs.contrast;applyPrefs();save();});
+  document.getElementById("dyslexicBtn").addEventListener("click",function(){
+    prefs.dys=!prefs.dys;applyPrefs();save();});
+  document.getElementById("textBtn").addEventListener("click",function(){
+    prefs.text=(prefs.text+1)%3;applyPrefs();save();});
+  applyPrefs();
+})();
+</script>
+</body>
+</html>

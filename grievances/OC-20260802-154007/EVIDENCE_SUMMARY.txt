@@ -1,0 +1,10 @@
+EVIDENCE SUMMARY
+
+Total Citations Analyzed: 2
+High Severity Violations: 2
+Medium Severity Violations: 0
+Low Severity Violations: 0
+
+FRAUD TYPES DETECTED:
+- fabricated: 1
+- misrepresented: 1

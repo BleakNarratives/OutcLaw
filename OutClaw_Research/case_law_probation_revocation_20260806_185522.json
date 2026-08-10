@@ -1,0 +1,107 @@
+{
+  "timestamp": "2026-08-06T23:55:06.246381",
+  "scout_type": "case_law",
+  "research_queries": [
+    {
+      "type": "core_issue",
+      "query": "probation revocation",
+      "purpose": "Find cases directly on point"
+    },
+    {
+      "type": "jurisdictional",
+      "query": "probation revocation Kansas",
+      "purpose": "Find Kansas precedent"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "probation revocation Kansas",
+      "purpose": "Find cases involving probation revocation"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "confrontation Kansas",
+      "purpose": "Find cases involving confrontation"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "hearsay Kansas",
+      "purpose": "Find cases involving hearsay"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "good cause Kansas",
+      "purpose": "Find cases involving good cause"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "judicial misconduct Kansas",
+      "purpose": "Find cases involving judicial misconduct"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "prosecutorial misconduct Kansas",
+      "purpose": "Find cases involving prosecutorial misconduct"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "ineffective assistance counsel Kansas",
+      "purpose": "Find cases involving ineffective assistance of counsel"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "Sumner County Kansas",
+      "purpose": "Find cases involving Sumner County"
+    },
+    {
+      "type": "keyword_focused",
+      "query": "Wellington Kansas",
+      "purpose": "Find cases involving Wellington Kansas"
+    },
+    {
+      "type": "opposition",
+      "query": "defense probation revocation",
+      "purpose": "Anticipate opposing arguments"
+    }
+  ],
+  "cases_found": [],
+  "legal_arguments": [],
+  "flags": [
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests",
+    "CourtListener search error: HTTP Error 403: Forbidden",
+    "Google Scholar search error: HTTP Error 429: Too Many Requests"
+  ],
+  "summary": "\n================================================================================\nCASE LAW RESEARCH SUMMARY\n================================================================================\n\nIssue Researched: probation revocation\nResearch Date: 2026-08-06 18:55:22\n\nRESULTS:\n- Total Cases Found: 0\n- Sources: \n- Courts: \n- Date Range: None to None\n\nKEY HOLDINGS (0):\n\nWINNING ARGUMENTS (0):\n\nADVERSE AUTHORITY TO DISTINGUISH (0):\n\n================================================================================\n",
+  "analysis": {
+    "total_cases": 0,
+    "sources": {},
+    "courts": {},
+    "date_range": {
+      "earliest": null,
+      "latest": null
+    },
+    "key_holdings": [],
+    "winning_arguments": [],
+    "adverse_authority": []
+  }
+}

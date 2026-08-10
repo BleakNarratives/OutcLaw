@@ -1,0 +1,274 @@
+# ══════════════════════════════════════════════════════════════════════
+# OutClaw v0.3.0 — Project-wide Configuration
+# ══════════════════════════════════════════════════════════════════════
+#
+# All user-adjustable specs in one place. Edit this file to customize
+# OutClaw's behavior without touching code.
+#
+# Changes take effect on next CLI invocation. No restart needed.
+
+# ── LLM Integration ──────────────────────────────────────────────────
+# Model Cascade (stair-stepped tier ladder) -- the successor to the single-
+# model `llm:` block. When enabled, every reasoning step in the pipeline
+# (RAG retrieval verification, extraction, classification, final adjudication)
+# enters at the cheapest adequate tier and escalates upward only when the
+# current tier cannot produce a confident, JSON-valid answer.
+#
+# ZERO-BUDGET: all providers below have FREE tiers requiring NO credit card.
+# Free cloud keys are read from environment variables (never committed):
+#   GOOGLE_API_KEY  (AI Studio, ~10-15 RPM free)
+#   GROQ_API_KEY    (~30 RPM / 14.4K RPD free)
+#   MISTRAL_API_KEY (free tier, SMS verify)
+#   OPENROUTER_API_KEY  (28+ :free models, ~20 RPM / 50 RPD)
+#   CEREBRAS_API_KEY    (1M tokens/day free)
+#   CF_API_TOKEN + CF_ACCOUNT_ID  (Workers AI, ~10K neurons/day free)
+#   HF_TOKEN          (inference API, <10B param models)
+#
+# CLOUD-ONLY by operator decision: no local inference (Ollama) rung. End
+# users are self-represented litigants on arbitrary consumer hardware who
+# will not have models installed; local inference is not part of the design.
+# With no keys configured the ladder fails fast (ok=False) and the
+# deterministic heuristic pipeline stands -- it never blocks an audit.
+cascade:
+  # Master switch. Off by default so the deterministic heuristic pipeline
+  # (and the 11/11 regression suite) stays the source of truth. Turn on via
+  # config here, env OUTCLAW_CASCADE=1, or --cascade on the CLI.
+  enabled: false
+
+  # Maximum seconds per HTTP call to any provider
+  timeout_seconds: 45
+
+  # Per-tier provider/model ladder. Order matters: providers are tried top-
+  # to-bottom within a tier; a failed tier escalates to the next tier UP.
+  tiers:
+    # Tier 1 -- fast first pass: citation extraction from prose, holding
+    # summarization, entity spotting.
+    extraction:
+      - {provider: groq,       model: llama-3.3-70b-versatile}
+      - {provider: gemini,     model: gemini-2.5-flash-lite}
+      - {provider: openrouter, model: meta-llama/llama-3.3-70b-instruct:free}
+      - {provider: cloudflare, model: auto}
+
+    # Tier 2 -- mid-weight reasoning: OPPOSITE HOLDING vs NO SUPPORT
+    # disambiguation, support scoring, RAG verification of retrieved authority.
+    classification:
+      - {provider: gemini,     model: gemini-2.5-flash}
+      - {provider: openrouter, model: deepseek/deepseek-r1:free}
+      - {provider: cerebras,   model: llama-3.3-70b}
+      - {provider: mistral,    model: open-mistral-nemo}
+      - {provider: groq,       model: deepseek-r1-distill-llama-70b}
+
+    # Tier 3 -- best available reasoning: final verdicts, cross-checks of
+    # disputed findings, seed expansion.
+    adjudication:
+      - {provider: openrouter, model: deepseek/deepseek-r1:free}
+      - {provider: cerebras,   model: deepseek-r1-distill-llama-70b}
+      - {provider: gemini,     model: gemini-2.5-flash}
+      - {provider: mistral,    model: mistral-large-latest}
+      - {provider: groq,       model: llama-3.3-70b-versatile}
+
+# ── Legacy LLM block ──────────────────────────────────────────────────
+# CLOUD-ONLY: retained only for config-file backward compatibility.
+# The `cascade:` block above is the single LLM path. There is no local
+# model (Ollama) anywhere in the design — end users will not have models
+# installed, so local inference is not part of OutClaw.
+llm:
+  # Master switch for LLM-assisted classification (via the cloud cascade)
+  enabled: false
+
+  # Legacy no-op (kept so old configs parse). The cascade chooses models.
+  model: "cascade"
+
+  # Maximum seconds to wait for LLM response
+  timeout_seconds: 15
+
+  # Only consult LLM when heuristic score is below this threshold (0.0-1.0)
+  # Lower = less LLM usage; higher = more LLM reliance
+  ambiguity_threshold: 0.25
+
+  # Minimum confidence for LLM classification to override heuristics
+  min_confidence: 0.70
+
+  # Cache size — how many recent LLM calls to memoize
+  cache_size: 256
+
+# ── Audit Pipeline ───────────────────────────────────────────────────
+audit:
+  # Severity mapping — what blocks a draft
+  # Options: "HIGH_ONLY" (only HIGH blocks) or "HIGH_AND_MEDIUM" (both block)
+  block_threshold: "HIGH_AND_MEDIUM"
+
+  # Sentence window for context-aware citation scoring
+  sentence_window: 1
+
+  # Enable negation-flip detection (catches OPPOSITE HOLDING)
+  negation_detection: true
+
+  # Minimum word overlap for SUPPORTED classification
+  min_overlap_score: 0.3
+
+  # Minimum shared words for window recovery
+  min_shared_words: 4
+
+# ── Aura Pattern Detection ──────────────────────────────────────────
+aura:
+  # Enable Aura Scout in full-audit pipeline
+  enabled: true
+
+  # Categories to scan (comment out to disable specific categories)
+  categories:
+    - financial_misconduct
+    - procedural_violations
+    - abuse_of_power
+    - transparency_issues
+    - civil_rights_violations
+    - judicial_misconduct
+    - rico_patterns
+
+  # Context window around matches (characters)
+  context_window: 80
+
+# ── Risk Scoring ─────────────────────────────────────────────────────
+risk:
+  # Scoring weights (adjust to change severity prioritization)
+  weights:
+    EXISTENCE: 30
+    NEGATIVE_TREATMENT: 25
+    OPPOSITE_HOLDING: 25
+    MISQUOTE_OPPOSITE: 20
+    NO_SUPPORT: 10
+
+  # Penalty per additional HIGH finding (cumulative)
+  compound_penalty: 10
+
+  # Discount applied when LLM verified a finding
+  llm_recovery_discount: 10
+
+  # Risk tier thresholds
+  tiers:
+    GREEN:  [0, 24]
+    YELLOW: [25, 49]
+    ORANGE: [50, 74]
+    RED:    [75, 100]
+
+  # Files above this score are blocked from filing
+  safe_file_threshold: 50
+
+# ── CourtListener Integration ────────────────────────────────────────
+courtlistener:
+  # API base URL (Free Law Project)
+  api_base: "https://www.courtlistener.com/api/rest/v4"
+
+  # Maximum requests per second (be a good API citizen)
+  rate_limit: 3
+
+  # Cache TTL in seconds (7 days default)
+  cache_ttl: 604800
+
+  # Auto-expand seed registry with discovered cases
+  auto_expand: false
+
+# ── Discovery Engine ─────────────────────────────────────────────────
+discovery:
+  # Minimum confidence to flag a discovery (0.0-1.0)
+  min_confidence: 0.4
+
+  # High-confidence threshold (0.0-1.0)
+  high_confidence: 0.7
+
+  # Log file for discoveries (JSONL format)
+  log_file: "~/.outclaw/discoveries.jsonl"
+
+  # Maximum pending discoveries before requiring operator review
+  max_pending: 100
+
+# ── FOIA Generator ───────────────────────────────────────────────────
+foia:
+  # Default jurisdiction for FOIA requests
+  default_jurisdiction: "generic"
+
+  # Default delivery method
+  default_method: "CERTIFIED MAIL — RETURN RECEIPT REQUESTED"
+
+  # Default format request
+  default_format: "electronic (PDF or native)"
+
+# ── IRAC Analyzer ────────────────────────────────────────────────────
+irac:
+  # Default jurisdiction for legal analysis
+  default_jurisdiction: "federal"
+
+  # Output format: "terminal" or "markdown"
+  output_format: "terminal"
+
+# ── Seed Registry ────────────────────────────────────────────────────
+seed:
+  # Path to seed file (relative to OutClaw/)
+  path: "outclaw_seed.json"
+
+  # Auto-reload seed when modified
+  auto_reload: true
+
+# ── Logging ──────────────────────────────────────────────────────────
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR
+  level: "WARNING"
+
+  # Log file (set to "" for stderr only)
+  file: "~/.outclaw/outclaw.log"
+
+  # Max log file size before rotation (bytes)
+  max_size: 10485760
+
+  # Number of rotated log files to keep
+  backup_count: 3
+
+# ── UX / Terminal ────────────────────────────────────────────────────
+terminal:
+  # Enable ANSI colors in output
+  colors: true
+
+  # Emoji indicators (set false for plain-text terminals)
+  emoji: true
+
+  # Dashboard width (characters)
+  dashboard_width: 70
+
+  # Risk bar width (characters)
+  risk_bar_width: 40
+
+# ── Safety Gate ──────────────────────────────────────────────────────
+safety:
+  # Require ack_token before generating document
+  require_ack: true
+
+  # Valid filing intents (add/remove to customize gate)
+  allowed_intents:
+    - section_1983_complaint
+    - criminal_appeal
+    - civil_appeal
+    - habeas_petition_2254
+    - motion_to_vacate_2255
+    - state_habeas
+    - state_post_conviction
+    - notice_of_appeal
+    - appellate_brief
+    - tro
+    - preliminary_injunction
+    - motion_to_dismiss
+
+# ══════════════════════════════════════════════════════════════════════
+# Advanced / Experimental
+# ══════════════════════════════════════════════════════════════════════
+
+experimental:
+  # Enable cross-device sync bridge
+  sync_bridge: false
+
+  # Sync interval in seconds
+  sync_interval: 60
+
+  # Enable Benford's Law analysis in full-audit (requires numeric data)
+  benford: false
+
+  # (Ollama host override removed 2026-08-03 — cloud-only by design.)

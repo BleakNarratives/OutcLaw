@@ -1,0 +1,808 @@
+"""
+OutClaw Pro Se Survival Guide
+Fast, Free, No-BS Legal Education for Self-Represented Litigants
+
+What Jurisdictionary should have been:
+- No bloviating
+- Just the critical rules
+- Actionable information
+- Survival-focused
+
+CRITICAL CONCEPTS EVERY PRO SE LITIGANT MUST KNOW:
+1. Object or lose forever (preservation of error)
+2. Tacit acceptance/acquiescence (silence = agreement)
+3. Counterclaims (sue back or lose the right)
+4. Affirmative defenses (raise them or waive them)
+5. Deadlines (miss them = game over)
+6. How to file (format, service, proof)
+"""
+
+import logging
+from dataclasses import dataclass
+from typing import Dict, List, Optional
+from datetime import datetime, timedelta
+from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class LegalConcept:
+    """A critical legal concept pro se litigants must understand"""
+    name: str
+    why_critical: str
+    what_happens_if_you_dont: str
+    how_to_do_it: str
+    deadline: Optional[str] = None
+    example: Optional[str] = None
+    template: Optional[str] = None
+
+
+class ProSeSurvivalGuide:
+    """
+    Fast, no-BS legal education for self-represented litigants.
+    
+    Focuses on survival-critical concepts that will destroy your case
+    if you don't know them.
+    """
+    
+    # The concepts that will destroy your case if you don't know them
+    CRITICAL_CONCEPTS = {
+        'objections': LegalConcept(
+            name="OBJECTIONS - Object or Lose Forever",
+            why_critical="""
+If you don't object to improper evidence or procedure, you WAIVE your right to 
+complain about it on appeal. The appellate court will say "You didn't object at 
+trial, so you can't complain now."
+
+This is called "preservation of error" or "contemporaneous objection rule."
+""",
+            what_happens_if_you_dont="""
+- You CANNOT appeal the issue
+- The improper evidence stays in
+- The judge's error stands
+- You lose your case because of something you could have stopped
+
+EXAMPLE: Opposing counsel introduces hearsay. You don't object. Judge allows it.
+You lose trial. You appeal. Appellate court says: "You didn't object at trial.
+Waived. Appeal denied."
+
+YOUR CASE IS OVER.
+""",
+            how_to_do_it="""
+WHEN TO OBJECT:
+- Immediately when improper question is asked
+- Before witness answers
+- As soon as improper evidence is offered
+
+HOW TO OBJECT:
+1. Stand up
+2. Say: "Objection, Your Honor."
+3. State the basis: "Hearsay" or "Relevance" or "Foundation"
+4. Sit down and shut up
+
+IF JUDGE ASKS FOR ARGUMENT:
+- Be brief (30 seconds max)
+- Cite the rule: "FRE 802 - hearsay is inadmissible"
+- Explain why it applies: "This is an out-of-court statement offered for truth"
+- Shut up
+
+IF OVERRULED:
+- Say: "I respectfully note my continuing objection for the record."
+- This preserves your right to appeal
+
+COMMON OBJECTIONS:
+- Hearsay (out-of-court statement offered for truth)
+- Relevance (doesn't relate to case)
+- Foundation (no basis established)
+- Speculation (witness guessing)
+- Leading (suggesting answer to witness)
+- Asked and answered (already covered)
+- Argumentative (counsel arguing with witness)
+- Assumes facts not in evidence
+- Counsel testifying (attorney stating facts)
+
+CRITICAL: If you don't object, you WAIVE it forever.
+""",
+            example="""
+WRONG:
+Opposing Counsel: "What did John tell you?"
+You: [Say nothing]
+Witness: "He said the defendant was there."
+[Hearsay admitted. You're screwed.]
+
+RIGHT:
+Opposing Counsel: "What did John tell you?"
+You: "Objection, Your Honor. Hearsay."
+Judge: "Sustained. Next question."
+[Hearsay excluded. You're protected.]
+"""
+        ),
+        
+        'tacit_acceptance': LegalConcept(
+            name="TACIT ACCEPTANCE - Silence = Agreement",
+            why_critical="""
+In law, if you don't respond to allegations or claims, you are deemed to have 
+ADMITTED them. This is called "tacit acceptance" or "acquiescence."
+
+Silence is NOT golden in court. Silence is ADMISSION.
+""",
+            what_happens_if_you_dont="""
+- Allegations against you are deemed ADMITTED
+- You cannot later deny them
+- Judge will rule against you based on your "admissions"
+- You lose by default
+
+EXAMPLE: Opposing party files motion claiming you violated court order.
+You don't respond. Judge deems allegations admitted. You're sanctioned.
+
+YOUR CASE IS OVER.
+""",
+            how_to_do_it="""
+RESPOND TO EVERYTHING:
+- Every motion filed against you
+- Every allegation in complaint
+- Every request for admission
+- Every discovery request
+- Every court order
+
+HOW TO RESPOND:
+1. File written response within deadline
+2. Specifically deny false allegations
+3. Admit only what is true
+4. Assert affirmative defenses
+5. Serve on opposing party
+6. File proof of service with court
+
+RESPONSE FORMAT:
+"Defendant responds to Plaintiff's Motion as follows:
+1. Paragraph 1 is DENIED.
+2. Paragraph 2 is ADMITTED.
+3. Paragraph 3 is DENIED as stated. The truth is [your version]."
+
+CRITICAL: Respond to EVERYTHING or it's deemed admitted.
+""",
+            deadline="Varies by document type - usually 14-30 days",
+            example="""
+WRONG:
+Plaintiff files Motion for Summary Judgment claiming you have no defense.
+You think: "That's ridiculous. Judge will see through it."
+You don't respond.
+Judge grants motion. You lose.
+
+RIGHT:
+Plaintiff files Motion for Summary Judgment.
+You file Response within 14 days.
+You specifically deny each allegation.
+You cite evidence supporting your defense.
+Judge denies motion. Case proceeds.
+"""
+        ),
+        
+        'counterclaims': LegalConcept(
+            name="COUNTERCLAIMS - Sue Back or Lose Forever",
+            why_critical="""
+If someone sues you and you have claims against them, you MUST file a counterclaim
+in the same case. If you don't, you WAIVE your claims forever.
+
+This is called "compulsory counterclaim rule."
+""",
+            what_happens_if_you_dont="""
+- You CANNOT sue them later for the same transaction
+- Your claims are BARRED forever
+- You lose your right to recover damages
+- You're stuck defending without being able to attack
+
+EXAMPLE: Plaintiff sues you for breach of contract. You have claims against them
+for fraud in the same contract. You don't file counterclaim. You win the lawsuit.
+Later you try to sue them for fraud. Court dismisses: "Should have filed counterclaim.
+Waived."
+
+YOUR CLAIMS ARE DEAD.
+""",
+            how_to_do_it="""
+WHEN TO FILE COUNTERCLAIM:
+- In your Answer to the Complaint
+- Within time to answer (usually 21 days)
+- Before case proceeds too far
+
+WHAT TO INCLUDE:
+1. Caption (same as complaint but add "COUNTERCLAIM")
+2. Parties (you are "Counter-Plaintiff", they are "Counter-Defendant")
+3. Jurisdiction and venue
+4. Facts supporting your claims
+5. Legal claims (breach of contract, fraud, etc.)
+6. Damages you're seeking
+7. Prayer for relief
+
+COMPULSORY vs PERMISSIVE:
+- Compulsory: Arises from same transaction (MUST file or waive)
+- Permissive: Unrelated to their claims (CAN file but not required)
+
+CRITICAL: If your claim arises from the same transaction, file it NOW or lose it FOREVER.
+""",
+            deadline="With Answer (usually 21 days from service)",
+            template="""
+COUNTERCLAIM
+
+Counter-Plaintiff [YOUR NAME], by and through [yourself, pro se], hereby asserts
+the following counterclaims against Counter-Defendant [THEIR NAME]:
+
+COUNT I: [Your Claim - e.g., Breach of Contract]
+
+1. [Incorporate allegations from Answer]
+2. Counter-Defendant breached the contract by [specific breach].
+3. As a result, Counter-Plaintiff suffered damages of $[amount].
+
+WHEREFORE, Counter-Plaintiff requests:
+1. Judgment against Counter-Defendant for $[amount]
+2. Costs and attorney fees
+3. Such other relief as the Court deems just
+
+[Signature]
+[Date]
+"""
+        ),
+        
+        'affirmative_defenses': LegalConcept(
+            name="AFFIRMATIVE DEFENSES - Raise Them or Waive Them",
+            why_critical="""
+Affirmative defenses are reasons why you're not liable EVEN IF everything they
+say is true. If you don't raise them in your Answer, you WAIVE them forever.
+
+Examples: Statute of limitations, waiver, estoppel, laches, unclean hands, etc.
+""",
+            what_happens_if_you_dont="""
+- You CANNOT raise the defense later
+- You're stuck arguing only that their facts are wrong
+- You lose defenses that could win your case
+- Judge will not allow you to add them later
+
+EXAMPLE: Plaintiff sues you for debt from 7 years ago. Statute of limitations
+is 5 years. You don't raise it in Answer. You try to raise it at trial.
+Judge: "Waived. Should have been in Answer."
+
+YOU LOSE A WINNING DEFENSE.
+""",
+            how_to_do_it="""
+COMMON AFFIRMATIVE DEFENSES:
+1. Statute of Limitations (claim is too old)
+2. Statute of Frauds (no written contract required by law)
+3. Waiver (they gave up their right)
+4. Estoppel (they're barred by their own conduct)
+5. Laches (they waited too long)
+6. Unclean Hands (they acted wrongfully)
+7. Failure to State a Claim (legally insufficient)
+8. Lack of Standing (wrong party suing)
+9. Payment (already paid)
+10. Release (they released you from liability)
+11. Accord and Satisfaction (settled)
+12. Duress (forced to sign)
+13. Fraud (they lied)
+14. Mistake (mutual misunderstanding)
+15. Illegality (contract is illegal)
+
+HOW TO PLEAD:
+In your Answer, after denying allegations, add:
+
+"AFFIRMATIVE DEFENSES
+
+1. STATUTE OF LIMITATIONS: Plaintiff's claims are barred by the applicable
+   statute of limitations.
+
+2. WAIVER: Plaintiff waived any right to bring these claims by [conduct].
+
+3. ESTOPPEL: Plaintiff is estopped from asserting these claims because [reason].
+
+[Continue for each defense]"
+
+CRITICAL: Plead EVERY affirmative defense that MIGHT apply. You can always
+abandon them later, but you CANNOT add them later.
+""",
+            deadline="In Answer (usually 21 days from service)",
+            example="""
+WRONG:
+Plaintiff sues you for breach of contract from 2018.
+Statute of limitations is 4 years (expired in 2022).
+You file Answer denying breach.
+You don't raise statute of limitations.
+At trial, you try to argue it's too old.
+Judge: "Waived. Not in Answer."
+You lose.
+
+RIGHT:
+Plaintiff sues you for breach of contract from 2018.
+You file Answer with Affirmative Defense #1: Statute of Limitations.
+Judge dismisses case before trial.
+You win.
+"""
+        ),
+        
+        'deadlines': LegalConcept(
+            name="DEADLINES - Miss Them = Game Over",
+            why_critical="""
+Courts have strict deadlines. Miss a deadline and you lose, period.
+No excuses. No extensions unless you ask BEFORE the deadline.
+
+Deadlines are JURISDICTIONAL - court loses power to help you if you miss them.
+""",
+            what_happens_if_you_dont="""
+- Your case is DISMISSED
+- Your appeal is DENIED
+- Your motion is DENIED
+- Default judgment entered against you
+- You LOSE automatically
+
+EXAMPLE: You have 30 days to appeal. You file on day 31. Appellate court
+dismisses: "Untimely. No jurisdiction." Your appeal is dead.
+
+GAME OVER.
+""",
+            how_to_do_it="""
+CRITICAL DEADLINES:
+
+ANSWER TO COMPLAINT:
+- Federal: 21 days from service
+- State: Varies (14-30 days typically)
+- Miss it = Default judgment against you
+
+RESPONSE TO MOTION:
+- Federal: 14 days typically
+- State: Varies
+- Miss it = Motion granted automatically
+
+APPEAL:
+- Federal: 30 days from final judgment
+- State: Varies (30-60 days)
+- Miss it = No appeal, ever
+
+DISCOVERY RESPONSES:
+- Federal: 30 days
+- State: Varies
+- Miss it = Sanctions, deemed admitted
+
+HOW TO CALCULATE DEADLINES:
+1. Start with trigger date (service, order, judgment)
+2. Count CALENDAR days (not business days) unless rule says otherwise
+3. If last day is weekend/holiday, deadline is next business day
+4. Add 3 days if served by mail (federal)
+
+HOW TO TRACK DEADLINES:
+1. Calendar every deadline immediately
+2. Set reminders 7 days before
+3. Set reminders 3 days before
+4. Set reminder day before
+5. File EARLY (don't wait until last day)
+
+HOW TO EXTEND DEADLINES:
+1. File motion for extension BEFORE deadline
+2. Show good cause
+3. Propose new deadline
+4. Serve on opposing party
+5. Get agreement if possible (stipulation)
+
+CRITICAL: NEVER miss a deadline. File something, even if incomplete.
+You can amend later, but you can't resurrect a dead case.
+""",
+            example="""
+WRONG:
+Complaint served on you January 1.
+Answer due January 22 (21 days).
+You think: "I'll file next week."
+January 23: You try to file Answer.
+Court: "Too late. Default judgment entered."
+You lose.
+
+RIGHT:
+Complaint served on you January 1.
+You calendar: "Answer due January 22"
+You set reminders: January 15, 19, 21
+You file Answer on January 20.
+Case proceeds.
+"""
+        ),
+        
+        'how_to_file': LegalConcept(
+            name="HOW TO FILE - Format, Service, Proof",
+            why_critical="""
+Even if your legal arguments are perfect, if you don't file correctly, your
+documents will be rejected or ignored.
+
+Courts have strict formatting and service requirements.
+""",
+            what_happens_if_you_dont="""
+- Court rejects your filing
+- Deadline passes while you fix it
+- You lose by default
+- Your arguments are never considered
+
+EXAMPLE: You file motion but don't serve opposing party. Court strikes motion.
+Deadline passes. You lose.
+""",
+            how_to_do_it="""
+DOCUMENT FORMAT:
+
+1. CAPTION (top of every document):
+   [COURT NAME]
+   
+   [YOUR NAME],               )
+        Plaintiff/Defendant,  )  Case No. [NUMBER]
+                              )
+   v.                         )
+                              )
+   [THEIR NAME],              )
+        Defendant/Plaintiff.  )
+
+2. TITLE:
+   DEFENDANT'S ANSWER TO COMPLAINT
+   PLAINTIFF'S MOTION FOR SUMMARY JUDGMENT
+   [etc.]
+
+3. BODY:
+   - Numbered paragraphs
+   - Double-spaced (usually)
+   - 12-point font
+   - 1-inch margins
+   - Page numbers
+
+4. SIGNATURE BLOCK:
+   Respectfully submitted,
+   
+   /s/ [Your Name]
+   [Your Name], Pro Se
+   [Address]
+   [Phone]
+   [Email]
+   
+   Dated: [Date]
+
+5. CERTIFICATE OF SERVICE:
+   I certify that on [date], I served a copy of this document on:
+   
+   [Opposing Party Name]
+   [Address]
+   
+   by [method: mail, email, hand delivery]
+   
+   /s/ [Your Name]
+
+HOW TO SERVE:
+1. Make copies (one for court, one for each party, one for you)
+2. Serve opposing party FIRST (mail, email, or hand delivery)
+3. File with court WITH proof of service
+4. Keep your copy
+
+PROOF OF SERVICE:
+- Certificate of Service (on document itself)
+- OR separate Affidavit of Service
+- Must state: who, what, when, where, how
+
+E-FILING:
+- Many courts require electronic filing
+- Register for court's e-filing system
+- Upload PDF of document
+- System serves opposing party automatically
+- Print confirmation for your records
+
+CRITICAL: Serve BEFORE you file. File WITH proof of service.
+No service = No filing = You lose.
+""",
+            template="""
+[CAPTION]
+
+DEFENDANT'S ANSWER TO COMPLAINT
+
+Defendant [YOUR NAME], appearing pro se, answers Plaintiff's Complaint as follows:
+
+1. Defendant admits the allegations in Paragraph 1 of the Complaint.
+2. Defendant denies the allegations in Paragraph 2 of the Complaint.
+3. Defendant lacks sufficient information to admit or deny the allegations in
+   Paragraph 3 and therefore denies them.
+
+AFFIRMATIVE DEFENSES
+
+1. STATUTE OF LIMITATIONS: Plaintiff's claims are barred by the applicable
+   statute of limitations.
+
+WHEREFORE, Defendant requests that the Court dismiss Plaintiff's Complaint
+with prejudice and award Defendant costs and such other relief as the Court
+deems just.
+
+Respectfully submitted,
+
+/s/ [Your Name]
+[Your Name], Pro Se
+[Address]
+[Phone]
+[Email]
+
+Dated: [Date]
+
+CERTIFICATE OF SERVICE
+
+I certify that on [date], I served a copy of this Answer on Plaintiff's counsel:
+
+[Attorney Name]
+[Address]
+
+by [first-class mail/email/hand delivery].
+
+/s/ [Your Name]
+"""
+        )
+    }
+    
+    def __init__(self):
+        self.output_dir = Path.home() / 'OutClaw_ProSe_Guide'
+        self.output_dir.mkdir(exist_ok=True)
+    
+    def generate_survival_guide(self) -> str:
+        """Generate complete survival guide"""
+        
+        guide = """
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    OUTCLAW PRO SE SURVIVAL GUIDE                             ║
+║                                                                              ║
+║              What Jurisdictionary Should Have Been (But Isn't)               ║
+║                                                                              ║
+║                        Fast. Free. No Bloviating.                            ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+WARNING: This guide contains ONLY the critical concepts that will DESTROY your
+case if you don't know them. No fluff. No theory. Just survival.
+
+If you learn nothing else, learn these 6 things:
+
+1. OBJECT OR LOSE FOREVER
+2. SILENCE = ADMISSION
+3. SUE BACK OR WAIVE IT
+4. RAISE DEFENSES OR LOSE THEM
+5. MISS DEADLINE = GAME OVER
+6. FILE CORRECTLY OR GET REJECTED
+
+═══════════════════════════════════════════════════════════════════════════════
+
+"""
+        
+        for concept_key, concept in self.CRITICAL_CONCEPTS.items():
+            guide += f"""
+{'═'*80}
+{concept.name}
+{'═'*80}
+
+WHY THIS WILL DESTROY YOUR CASE:
+{concept.why_critical}
+
+WHAT HAPPENS IF YOU DON'T KNOW THIS:
+{concept.what_happens_if_you_dont}
+
+HOW TO DO IT:
+{concept.how_to_do_it}
+
+"""
+            if concept.deadline:
+                guide += f"DEADLINE: {concept.deadline}\n\n"
+            
+            if concept.example:
+                guide += f"EXAMPLE:\n{concept.example}\n\n"
+            
+            if concept.template:
+                guide += f"TEMPLATE:\n{concept.template}\n\n"
+        
+        guide += """
+═══════════════════════════════════════════════════════════════════════════════
+QUICK REFERENCE CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+WHEN YOU GET SUED:
+☐ Calendar Answer deadline (21 days from service)
+☐ Read complaint carefully
+☐ Identify all claims against you
+☐ Identify your counterclaims (same transaction)
+☐ Identify affirmative defenses
+☐ Draft Answer with denials, affirmative defenses, counterclaims
+☐ Serve opposing party
+☐ File with court with proof of service
+☐ Calendar all future deadlines
+
+WHEN THEY FILE A MOTION:
+☐ Calendar response deadline (14 days typically)
+☐ Read motion carefully
+☐ Draft response denying allegations
+☐ Cite law and evidence supporting your position
+☐ Serve opposing party
+☐ File with court with proof of service
+
+AT TRIAL:
+☐ Object to improper evidence immediately
+☐ State basis for objection
+☐ If overruled, note continuing objection
+☐ Make record of all errors for appeal
+
+AFTER JUDGMENT:
+☐ Calendar appeal deadline (30 days typically)
+☐ Decide whether to appeal
+☐ If appealing, file Notice of Appeal within deadline
+☐ Order transcript
+☐ Follow appellate rules
+
+═══════════════════════════════════════════════════════════════════════════════
+COMMON MISTAKES THAT KILL CASES
+═══════════════════════════════════════════════════════════════════════════════
+
+1. NOT RESPONDING
+   - Thinking "this is ridiculous, judge will see through it"
+   - Silence = admission = you lose
+
+2. NOT OBJECTING
+   - Thinking "judge will fix it"
+   - No objection = waived = you lose appeal
+
+3. NOT FILING COUNTERCLAIMS
+   - Thinking "I'll sue them later"
+   - Later = too late = waived forever
+
+4. NOT RAISING AFFIRMATIVE DEFENSES
+   - Thinking "I'll bring it up at trial"
+   - Trial = too late = waived
+
+5. MISSING DEADLINES
+   - Thinking "judge will understand"
+   - Judge has no power to help you = you lose
+
+6. NOT SERVING OPPOSING PARTY
+   - Thinking "I'll just file with court"
+   - No service = no filing = you lose
+
+7. NOT KEEPING RECORDS
+   - Thinking "I'll remember"
+   - You won't = you lose
+
+═══════════════════════════════════════════════════════════════════════════════
+RESOURCES
+═══════════════════════════════════════════════════════════════════════════════
+
+FEDERAL RULES:
+- Federal Rules of Civil Procedure: https://www.uscourts.gov/rules-policies/current-rules-practice-procedure/federal-rules-civil-procedure
+- Federal Rules of Evidence: https://www.uscourts.gov/rules-policies/current-rules-practice-procedure/federal-rules-evidence
+
+STATE RULES:
+- Check your state court website for local rules
+- Each state has its own rules of civil procedure
+- Each court may have local rules
+
+FORMS:
+- Federal forms: https://www.uscourts.gov/forms
+- State forms: Check state court website
+
+OUTCLAW TOOLS:
+- Citation fraud detection: outclaw_unified.py
+- Bar grievance generator: outclaw_grievance_generator.py
+- Judicial complaint generator: outclaw_judicial_complaints.py
+- Objections engine: outclaw_objections_engine.py
+
+═══════════════════════════════════════════════════════════════════════════════
+FINAL WARNING
+═══════════════════════════════════════════════════════════════════════════════
+
+The legal system is designed to punish ignorance.
+
+If you don't know these rules, you WILL lose, even if you're right.
+
+The judge will NOT help you.
+The opposing attorney will NOT tell you.
+The court clerk CANNOT give you legal advice.
+
+You are on your own.
+
+This guide gives you the minimum knowledge to survive.
+
+Use it.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Generated by OutClaw Pro Se Survival Guide v0.3.0
+Fast. Free. No Bloviating.
+"""
+        
+        return guide
+    
+    def generate_deadline_calculator(self, trigger_date: datetime, 
+                                    deadline_days: int,
+                                    served_by_mail: bool = False) -> Dict:
+        """
+        Calculate deadline with proper day counting.
+        
+        Args:
+            trigger_date: Date that starts the clock
+            deadline_days: Number of days for deadline
+            served_by_mail: Add 3 days if served by mail (federal rule)
+            
+        Returns:
+            Dict with deadline info
+        """
+        # Add mail service days if applicable
+        if served_by_mail:
+            deadline_days += 3
+        
+        # Calculate deadline
+        deadline = trigger_date + timedelta(days=deadline_days)
+        
+        # If deadline falls on weekend, move to next Monday
+        while deadline.weekday() >= 5:  # 5 = Saturday, 6 = Sunday
+            deadline += timedelta(days=1)
+        
+        # Calculate reminder dates
+        reminder_7_days = deadline - timedelta(days=7)
+        reminder_3_days = deadline - timedelta(days=3)
+        reminder_1_day = deadline - timedelta(days=1)
+        
+        return {
+            'trigger_date': trigger_date.strftime('%B %d, %Y'),
+            'deadline_date': deadline.strftime('%B %d, %Y'),
+            'days_until_deadline': (deadline - datetime.now()).days,
+            'served_by_mail': served_by_mail,
+            'mail_days_added': 3 if served_by_mail else 0,
+            'reminders': {
+                '7_days_before': reminder_7_days.strftime('%B %d, %Y'),
+                '3_days_before': reminder_3_days.strftime('%B %d, %Y'),
+                '1_day_before': reminder_1_day.strftime('%B %d, %Y')
+            },
+            'warning': 'FILE EARLY - DO NOT WAIT UNTIL LAST DAY' if (deadline - datetime.now()).days < 7 else None
+        }
+    
+    def save_guide(self):
+        """Save survival guide to file"""
+        guide_text = self.generate_survival_guide()
+        
+        guide_file = self.output_dir / 'PRO_SE_SURVIVAL_GUIDE.txt'
+        guide_file.write_text(guide_text)
+        
+        logger.info(f"Survival guide saved to: {guide_file}")
+        
+        return guide_file
+
+
+# Example usage
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    
+    guide = ProSeSurvivalGuide()
+    
+    # Generate and save guide
+    guide_file = guide.save_guide()
+    
+    print(f"\n✅ Pro Se Survival Guide Generated")
+    print(f"📁 Location: {guide_file}")
+    print(f"\n{'='*80}")
+    print("PREVIEW:")
+    print(f"{'='*80}\n")
+    
+    # Print preview
+    print(guide.generate_survival_guide()[:2000])
+    print("\n[... guide continues ...]\n")
+    
+    # Example deadline calculation
+    print(f"\n{'='*80}")
+    print("DEADLINE CALCULATOR EXAMPLE")
+    print(f"{'='*80}\n")
+    
+    # Complaint served today, answer due in 21 days
+    served_date = datetime.now()
+    deadline_info = guide.generate_deadline_calculator(
+        trigger_date=served_date,
+        deadline_days=21,
+        served_by_mail=True  # Add 3 days for mail service
+    )
+    
+    print(f"Complaint Served: {deadline_info['trigger_date']}")
+    print(f"Served by Mail: {deadline_info['served_by_mail']}")
+    print(f"Mail Days Added: {deadline_info['mail_days_added']}")
+    print(f"Answer Deadline: {deadline_info['deadline_date']}")
+    print(f"Days Until Deadline: {deadline_info['days_until_deadline']}")
+    print(f"\nREMINDERS:")
+    print(f"  7 days before: {deadline_info['reminders']['7_days_before']}")
+    print(f"  3 days before: {deadline_info['reminders']['3_days_before']}")
+    print(f"  1 day before: {deadline_info['reminders']['1_day_before']}")
+    if deadline_info['warning']:
+        print(f"\n⚠️  {deadline_info['warning']}")

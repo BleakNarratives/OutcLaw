@@ -1,0 +1,11 @@
+EVIDENCE SUMMARY
+
+Total Incidents: 3
+High Severity: 3
+Medium Severity: 0
+Low Severity: 0
+
+MISCONDUCT TYPES:
+- Bias and Prejudice: 1
+- Ex Parte Communications: 1
+- Denial of Due Process: 1

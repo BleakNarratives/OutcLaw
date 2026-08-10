@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OutClaw - Legal Team Boardroom</title>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0704;
+            --bg-secondary: #1a1408;
+            --text-primary: #e8d5a0;
+            --accent-gold: #c8861e;
+            --accent-bright: #ffb347;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+        }
+
+        .high-contrast {
+            --bg-primary: #000000;
+            --text-primary: #ffffff;
+            --accent-gold: #ffcc00;
+            --accent-bright: #ffff00;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Atkinson Hyperlegible', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        body.large-text { font-size: 18px; }
+        body.xl-text { font-size: 22px; }
+
+        /* Accessibility Bar */
+        .accessibility-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--accent-gold);
+            padding: 10px 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            z-index: 1000;
+            flex-wrap: wrap;
+        }
+
+        .a11y-btn {
+            padding: 6px 14px;
+            background: transparent;
+            border: 2px solid var(--accent-gold);
+            color: var(--accent-gold);
+            font-weight: 700;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 4px;
+        }
+
+        .a11y-btn:hover, .a11y-btn.active {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+        }
+
+        /* Canvas Container */
+        #canvas-container {
+            position: fixed;
+            inset: 50px 0 0 0;
+            z-index: 1;
+        }
+
+        /* HUD Overlay */
+        #hud {
+            position: fixed;
+            inset: 50px 0 0 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        #hud-top {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .hud-brand {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--accent-bright);
+            text-shadow: 0 0 15px rgba(255,179,71,0.6);
+            letter-spacing: 3px;
+        }
+
+        .hud-stats {
+            text-align: right;
+            font-size: 0.85em;
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .hud-stats em {
+            color: var(--accent-bright);
+            font-style: normal;
+            font-weight: 700;
+        }
+
+        /* Team Status Bar */
+        #team-bar {
+            position: fixed;
+            bottom: 180px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: rgba(10,7,4,0.95);
+            border-top: 2px solid var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 0 20px;
+            z-index: 100;
+            overflow-x: auto;
+        }
+
+        .team-member {
+            font-size: 0.75em;
+            letter-spacing: 1px;
+            color: #666;
+            white-space: nowrap;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .team-member.active {
+            color: var(--accent-bright);
+            font-weight: 700;
+        }
+
+        .team-member-icon {
+            font-size: 1.5em;
+        }
+
+        /* Input Area */
+        #input-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 180px;
+            background: rgba(10,7,4,0.98);
+            border-top: 3px solid var(--accent-gold);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            pointer-events: all;
+        }
+
+        #controls-row {
+            display: flex;
+            gap: 8px;
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--bg-secondary);
+            flex-wrap: wrap;
+        }
+
+        .ctrl {
+            font-size: 0.75em;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+            border: 2px solid var(--accent-gold);
+            background: transparent;
+            padding: 6px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .ctrl:hover {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+        }
+
+        #upload-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px dashed var(--accent-gold);
+            margin: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(200,134,30,0.05);
+        }
+
+        #upload-area:hover, #upload-area.drag-over {
+            background: rgba(200,134,30,0.15);
+            border-color: var(--accent-bright);
+        }
+
+        #upload-text {
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #upload-text h3 {
+            font-size: 1.3em;
+            color: var(--accent-bright);
+            margin-bottom: 8px;
+        }
+
+        #upload-text p {
+            font-size: 0.95em;
+            color: var(--text-primary);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        #action-row {
+            display: flex;
+            gap: 10px;
+            padding: 10px 15px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: 700;
+            border: 3px solid var(--accent-gold);
+            background: var(--bg-secondary);
+            color: var(--accent-bright);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Results Panel */
+        #results-panel {
+            position: fixed;
+            right: 0;
+            top: 50px;
+            bottom: 180px;
+            width: 400px;
+            background: rgba(10,7,4,0.98);
+            border-left: 3px solid var(--accent-gold);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 150;
+            display: flex;
+            flex-direction: column;
+            pointer-events: all;
+        }
+
+        #results-panel.open {
+            transform: translateX(0);
+        }
+
+        #results-header {
+            padding: 15px 20px;
+            border-bottom: 2px solid var(--accent-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #results-header h3 {
+            color: var(--accent-bright);
+            font-size: 1.2em;
+        }
+
+        #results-close {
+            cursor: pointer;
+            padding: 4px 12px;
+            border: 2px solid var(--accent-gold);
+            border-radius: 4px;
+            font-size: 0.8em;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        #results-close:hover {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+        }
+
+        #results-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        #results-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #results-content::-webkit-scrollbar-thumb {
+            background: var(--accent-gold);
+            border-radius: 4px;
+        }
+
+        .result-item {
+            background: rgba(200,134,30,0.1);
+            border: 2px solid var(--accent-gold);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .result-item h4 {
+            color: var(--accent-bright);
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .result-item p {
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .severity-high { color: var(--danger); font-weight: 700; }
+        .severity-medium { color: var(--warning); font-weight: 700; }
+        .severity-low { color: var(--success); font-weight: 700; }
+
+        /* Loading Overlay */
+        #loading {
+            position: fixed;
+            inset: 50px 0 180px 0;
+            background: rgba(10,7,4,0.9);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #loading.show {
+            display: flex;
+        }
+
+        .spinner {
+            border: 6px solid rgba(200,134,30,0.2);
+            border-top: 6px solid var(--accent-gold);
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loading-text {
+            font-size: 1.5em;
+            color: var(--accent-bright);
+            font-weight: 700;
+            text-shadow: 0 0 20px rgba(255,179,71,0.6);
+        }
+
+        #loading-sub {
+            font-size: 1em;
+            color: var(--text-primary);
+        }
+
+        /* Click Hint */
+        #click-hint {
+            position: fixed;
+            bottom: 230px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.85em;
+            color: var(--accent-gold);
+            letter-spacing: 2px;
+            pointer-events: none;
+            z-index: 60;
+            animation: hintfade 4s ease-in-out infinite;
+            text-align: center;
+            padding: 10px 20px;
+            background: rgba(10,7,4,0.8);
+            border: 2px solid var(--accent-gold);
+            border-radius: 6px;
+        }
+
+        @keyframes hintfade {
+            0%, 100% { opacity: 0; }
+            30%, 70% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            #results-panel {
+                width: 100%;
+            }
+            .hud-brand {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Accessibility Controls -->
+    <div class="accessibility-bar">
+        <button class="a11y-btn" id="contrastBtn">High Contrast</button>
+        <button class="a11y-btn" id="textSizeBtn">Larger Text</button>
+        <span style="margin-left: auto; color: var(--accent-gold); font-size: 0.85em;">
+            Click a team member to consult • Drag files to analyze
+        </span>
+    </div>
+
+    <!-- Three.js Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- HUD -->
+    <div id="hud">
+        <div id="hud-top">
+            <div class="hud-brand">⚖️ OUTCLAW LEGAL TEAM</div>
+            <div class="hud-stats">
+                CASES ANALYZED: <em id="case-count">0</em><br>
+                TEAM STATUS: <em id="team-status">READY</em><br>
+                SESSION: <em id="session-id">—</em>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Status Bar -->
+    <div id="team-bar">
+        <div class="team-member" id="tm-analyst">
+            <span class="team-member-icon">📊</span>
+            <span>CITATION ANALYST: STANDBY</span>
+        </div>
+        <div class="team-member" id="tm-researcher">
+            <span class="team-member-icon">🔍</span>
+            <span>LEGAL RESEARCHER: READY</span>
+        </div>
+        <div class="team-member" id="tm-validator">
+            <span class="team-member-icon">✓</span>
+            <span>CASE VALIDATOR: ARMED</span>
+        </div>
+        <div class="team-member" id="tm-risk">
+            <span class="team-member-icon">⚠️</span>
+            <span>RISK ASSESSOR: LISTENING</span>
+        </div>
+        <div class="team-member" id="tm-strategist">
+            <span class="team-member-icon">🎯</span>
+            <span>LEGAL STRATEGIST: ONLINE</span>
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div id="input-area">
+        <div id="controls-row">
+            <button class="ctrl" onclick="toggleResults()">VIEW RESULTS</button>
+            <button class="ctrl" onclick="clearAll()">CLEAR</button>
+            <label class="ctrl" style="cursor: pointer;">
+                <input type="checkbox" id="useLLM" style="margin-right: 5px;">
+                AI ASSIST
+            </label>
+            <label class="ctrl" style="cursor: pointer;">
+                <input type="checkbox" id="enableAura" checked style="margin-right: 5px;">
+                AURA SCAN
+            </label>
+        </div>
+        
+        <div id="upload-area">
+            <div id="upload-text">
+                <h3>📄 DROP YOUR LEGAL DOCUMENT HERE</h3>
+                <p>Or click to browse files (PDF, TXT, DOCX)</p>
+            </div>
+            <input type="file" id="file-input" accept=".pdf,.txt,.docx,.doc">
+        </div>
+
+        <div id="action-row">
+            <button class="action-btn" id="quickAuditBtn" disabled>
+                <span>⚡</span>
+                <span>QUICK AUDIT</span>
+            </button>
+            <button class="action-btn" id="fullAuditBtn" disabled>
+                <span>🔬</span>
+                <span>FULL ANALYSIS</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Panel -->
+    <div id="results-panel">
+        <div id="results-header">
+            <h3>📋 ANALYSIS RESULTS</h3>
+            <span id="results-close">CLOSE</span>
+        </div>
+        <div id="results-content">
+            <p style="color: var(--text-primary); text-align: center; padding: 40px 20px;">
+                No analysis yet. Upload a document to begin.
+            </p>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loading-text">LEGAL TEAM ANALYZING</div>
+        <div id="loading-sub">Your expert team is reviewing the document...</div>
+    </div>
+
+    <div id="click-hint">
+        CLICK A TEAM MEMBER FOR PRIVATE CONSULTATION
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // State
+        const S = {
+            selectedFile: null,
+            caseCount: 0,
+            sessionId: 'oc_' + Math.random().toString(36).substr(2, 8),
+            resultsOpen: false,
+            textSize: 'normal',
+        };
+
+        // Team members (legal experts)
+        const TEAM = [
+            { id: 'analyst', name: 'CITATION ANALYST', icon: '📊', color: 0xffb347, pos: { x: -2.5, z: -2 } },
+            { id: 'researcher', name: 'LEGAL RESEARCHER', icon: '🔍', color: 0x7ac4d4, pos: { x: 2.5, z: -2 } },
+            { id: 'validator', name: 'CASE VALIDATOR', icon: '✓', color: 0x8ab870, pos: { x: -1.8, z: -0.5 } },
+            { id: 'risk', name: 'RISK ASSESSOR', icon: '⚠️', color: 0xcc4433, pos: { x: 1.8, z: -0.5 } },
+            { id: 'strategist', name: 'LEGAL STRATEGIST', icon: '🎯', color: 0xb07ad4, pos: { x: 0, z: -2.5 } },
+        ];
+
+        // Three.js scene
+        let scene, camera, renderer, raycaster, mouse, clock;
+        const agentMeshes = {};
+
+        function initThree() {
+            const container = document.getElementById('canvas-container');
+            
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0704);
+            scene.fog = new THREE.FogExp2(0x0a0704, 0.08);
+
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(0, 1.6, 3.5);
+            camera.lookAt(0, 1.0, -1.5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            clock = new THREE.Clock();
+
+            buildScene();
+            buildTeam();
+
+            window.addEventListener('resize', onResize);
+            renderer.domElement.addEventListener('click', onSceneClick);
+
+            animate();
+        }
+
+        function buildScene() {
+            // Lighting
+            const pendant = new THREE.PointLight(0xffd090, 2.0, 12);
+            pendant.position.set(0, 3.5, -1);
+            pendant.castShadow = true;
+            scene.add(pendant);
+
+            const ambient = new THREE.AmbientLight(0x3a2810, 0.5);
+            scene.add(ambient);
+
+            // Floor
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(20, 20),
+                new THREE.MeshLambertMaterial({ color: 0x0a0804 })
+            );
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            // Table
+            const table = new THREE.Mesh(
+                new THREE.BoxGeometry(5, 0.1, 5),
+                new THREE.MeshLambertMaterial({ color: 0x1e1408 })
+            );
+            table.position.set(0, 0.85, -1.5);
+            table.receiveShadow = true;
+            scene.add(table);
+
+            // Felt surface
+            const felt = new THREE.Mesh(
+                new THREE.BoxGeometry(4.8, 0.01, 4.8),
+                new THREE.MeshLambertMaterial({ color: 0x0e2010 })
+            );
+            felt.position.set(0, 0.91, -1.5);
+            scene.add(felt);
+        }
+
+        function buildTeam() {
+            TEAM.forEach(member => {
+                const group = new THREE.Group();
+                group.position.set(member.pos.x, 0.92, member.pos.z);
+                group.userData = { memberId: member.id, type: 'team' };
+
+                // Body
+                const body = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.4, 0.5, 0.25),
+                    new THREE.MeshLambertMaterial({ color: 0x1a1a2a })
+                );
+                body.position.y = -0.05;
+                group.add(body);
+
+                // Head (canvas sprite with icon)
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+                
+                drawHead(ctx, member, canvas.width, canvas.height, 'normal');
+
+                const headTex = new THREE.CanvasTexture(canvas);
+                const headMat = new THREE.SpriteMaterial({ map: headTex, transparent: true });
+                const headSprite = new THREE.Sprite(headMat);
+                headSprite.scale.set(0.6, 0.6, 0.6);
+                headSprite.position.set(0, 0.6, 0);
+                headSprite.userData = { memberId: member.id, canvas, ctx, member };
+                group.add(headSprite);
+
+                // Nameplate
+                const nameCanvas = document.createElement('canvas');
+                nameCanvas.width = 256;
+                nameCanvas.height = 48;
+                const nctx = nameCanvas.getContext('2d');
+                nctx.fillStyle = '#1a1408';
+                nctx.fillRect(0, 0, 256, 48);
+                nctx.strokeStyle = '#' + member.color.toString(16).padStart(6, '0');
+                nctx.strokeRect(1, 1, 254, 46);
+                nctx.fillStyle = '#' + member.color.toString(16).padStart(6, '0');
+                nctx.font = 'bold 18px Arial';
+                nctx.textAlign = 'center';
+                nctx.textBaseline = 'middle';
+                nctx.fillText(member.name, 128, 24);
+
+                const nameTex = new THREE.CanvasTexture(nameCanvas);
+                const nameSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: nameTex, transparent: true }));
+                nameSprite.scale.set(0.5, 0.1, 0.1);
+                nameSprite.position.set(0, -0.1, 0);
+                group.add(nameSprite);
+
+                agentMeshes[member.id] = { group, headSprite, canvas, ctx, member };
+                scene.add(group);
+            });
+        }
+
+        function drawHead(ctx, member, w, h, state) {
+            ctx.clearRect(0, 0, w, h);
+
+            // Background
+            const grad = ctx.createRadialGradient(w/2, h/2, 5, w/2, h/2, w/2-8);
+            grad.addColorStop(0, '#2a1e10');
+            grad.addColorStop(1, '#0a0804');
+            ctx.beginPath();
+            ctx.arc(w/2, h/2, w/2-10, 0, Math.PI*2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Border
+            ctx.strokeStyle = '#' + member.color.toString(16).padStart(6, '0');
+            ctx.lineWidth = state === 'active' ? 4 : 2;
+            ctx.stroke();
+
+            if (state === 'active') {
+                ctx.shadowColor = '#' + member.color.toString(16).padStart(6, '0');
+                ctx.shadowBlur = 15;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            // Icon
+            ctx.font = `${Math.round(w * 0.4)}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(member.icon, w/2, h/2);
+        }
+
+        function updateHead(memberId, state) {
+            const agent = agentMeshes[memberId];
+            if (!agent) return;
+            drawHead(agent.ctx, agent.member, agent.canvas.width, agent.canvas.height, state);
+            agent.headSprite.material.map.needsUpdate = true;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const t = clock.getElapsedTime();
+
+            // Gentle idle animations
+            TEAM.forEach((member, i) => {
+                const agent = agentMeshes[member.id];
+                if (!agent) return;
+                const phase = i * 1.3;
+                agent.group.position.y = 0.92 + Math.sin(t * 0.8 + phase) * 0.008;
+                agent.group.rotation.z = Math.sin(t * 0.4 + phase) * 0.015;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        function onSceneClick(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const meshList = [];
+            Object.values(agentMeshes).forEach(a => {
+                a.group.traverse(c => { if (c.isMesh || c.isSprite) meshList.push(c); });
+            });
+
+            const hits = raycaster.intersectObjects(meshList, false);
+            if (hits.length > 0) {
+                let obj = hits[0].object;
+                while (obj && !obj.userData.memberId) obj = obj.parent;
+                if (obj && obj.userData.memberId) {
+                    const member = TEAM.find(m => m.id === obj.userData.memberId);
+                    if (member) {
+                        alert(`Consulting with ${member.name}\n\nThis expert specializes in ${member.name.toLowerCase()} for your case.`);
+                    }
+                }
+            }
+        }
+
+        function onResize() {
+            const container = document.getElementById('canvas-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // File handling
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const quickAuditBtn = document.getElementById('quickAuditBtn');
+        const fullAuditBtn = document.getElementById('fullAuditBtn');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            S.selectedFile = file;
+            document.getElementById('upload-text').innerHTML = `
+                <h3>✓ ${file.name}</h3>
+                <p>Ready for analysis</p>
+            `;
+            quickAuditBtn.disabled = false;
+            fullAuditBtn.disabled = false;
+            document.getElementById('team-status').textContent = 'FILE LOADED';
+        }
+
+        quickAuditBtn.addEventListener('click', () => runAudit('quick'));
+        fullAuditBtn.addEventListener('click', () => runAudit('full'));
+
+        async function runAudit(type) {
+            if (!S.selectedFile) return;
+
+            const loading = document.getElementById('loading');
+            loading.classList.add('show');
+            document.getElementById('team-status').textContent = 'ANALYZING';
+
+            // Activate team members sequentially
+            TEAM.forEach((member, i) => {
+                setTimeout(() => {
+                    updateHead(member.id, 'active');
+                    document.getElementById(`tm-${member.id}`).classList.add('active');
+                    setTimeout(() => {
+                        updateHead(member.id, 'normal');
+                        document.getElementById(`tm-${member.id}`).classList.remove('active');
+                    }, 2000);
+                }, i * 400);
+            });
+
+            const formData = new FormData();
+            formData.append('file', S.selectedFile);
+            formData.append('use_llm', document.getElementById('useLLM').checked);
+            if (type === 'full') {
+                formData.append('enable_aura', document.getElementById('enableAura').checked);
+            }
+
+            try:
+                const endpoint = type === 'quick' ? '/api/audit-case' : '/api/full-audit';
+                const response = await fetch(endpoint, { method: 'POST', body: formData });
+                const data = await response.json();
+
+
+                if (data.success) {
+                    displayResults(data.data, data.elapsed_ms, type);
+                    S.caseCount++;
+                    document.getElementById('case-count').textContent = S.caseCount;
+                } else {
+                    alert('Analysis failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            } finally {
+                loading.classList.remove('show');
+                document.getElementById('team-status').textContent = 'READY';
+            }
+        }
+
+        function displayResults(data, elapsed, type) {
+            const summary = data.summary || {};
+            const findings = data.findings || [];
+            const risk = data.risk || {};
+
+            let html = `
+                <div class="result-item">
+                    <h4>${type === 'full' ? '🔬 FULL ANALYSIS' : '⚡ QUICK AUDIT'} COMPLETE</h4>
+                    <p><strong>Risk Level:</strong> <span class="severity-${risk.tier?.toLowerCase() || 'low'}">${risk.tier || 'UNKNOWN'}</span></p>
+                    <p><strong>Citations Found:</strong> ${summary.total_citations || 0}</p>
+                    <p><strong>Verified:</strong> ${summary.verified_count || 0}</p>
+                    <p><strong>High Risk Issues:</strong> ${summary.severity_counts?.HIGH || 0}</p>
+                    <p><strong>Analysis Time:</strong> ${elapsed.toFixed(0)}ms</p>
+                </div>
+            `;
+
+            if (findings.length > 0) {
+                html += '<div class="result-item"><h4>📋 FINDINGS</h4>';
+                findings.forEach(f => {
+                    html += `<p><span class="severity-${f.severity.toLowerCase()}">${f.severity}:</span> ${f.citation} - ${f.issue_type}</p>`;
+                });
+                html += '</div>';
+            }
+
+            document.getElementById('results-content').innerHTML = html;
+            document.getElementById('results-panel').classList.add('open');
+            S.resultsOpen = true;
+        }
+
+        function toggleResults() {
+            S.resultsOpen = !S.resultsOpen;
+            document.getElementById('results-panel').classList.toggle('open', S.resultsOpen);
+        }
+
+        document.getElementById('results-close').addEventListener('click', toggleResults);
+
+        function clearAll() {
+            S.selectedFile = null;
+            document.getElementById('upload-text').innerHTML = `
+                <h3>📄 DROP YOUR LEGAL DOCUMENT HERE</h3>
+                <p>Or click to browse files (PDF, TXT, DOCX)</p>
+            `;
+            quickAuditBtn.disabled = true;
+            fullAuditBtn.disabled = true;
+            fileInput.value = '';
+            document.getElementById('results-content').innerHTML = '<p style="color: var(--text-primary); text-align: center; padding: 40px 20px;">No analysis yet. Upload a document to begin.</p>';
+            document.getElementById('team-status').textContent = 'READY';
+        }
+
+        // Accessibility
+        document.getElementById('contrastBtn').addEventListener('click', function() {
+            document.body.classList.toggle('high-contrast');
+            this.classList.toggle('active');
+        });
+
+        document.getElementById('textSizeBtn').addEventListener('click', function() {
+            document.body.classList.remove('large-text', 'xl-text');
+            if (S.textSize === 'normal') {
+                S.textSize = 'large';
+                document.body.classList.add('large-text');
+            } else if (S.textSize === 'large') {
+                S.textSize = 'xl';
+                document.body.classList.add('xl-text');
+            } else {
+                S.textSize = 'normal';
+            }
+            this.classList.toggle('active', S.textSize !== 'normal');
+            this.textContent = S.textSize === 'xl' ? 'XL Text' : S.textSize === 'large' ? 'Large Text' : 'Larger Text';
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            document.getElementById('session-id').textContent = S.sessionId;
+            initThree();
+        });
+    </script>
+</body>
+</html>

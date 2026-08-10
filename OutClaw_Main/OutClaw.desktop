@@ -1,0 +1,39 @@
+# OutClaw.desktop — template for pinning OutClaw to your desktop/app menu.
+#
+# Two ways to use this:
+#
+#   EASY WAY (recommended)
+#     Run the installer instead — it fills in the real paths for you:
+#         bash install.sh
+#
+#   MANUAL WAY
+#     1. Copy this file to:
+#          ~/.local/share/applications/OutClaw.desktop      (app menu)
+#        and optionally:
+#          ~/Desktop/OutClaw.desktop                        (desktop)
+#     2. Edit the Exec= line below, replacing __OUTCLAW_DIR__
+#        with the FULL folder path where this project lives,
+#        e.g.  /home/yourname/OutClaw/OutClaw_Main
+#     3. Mark it runnable:
+#          chmod +x ~/.local/share/applications/OutClaw.desktop
+#     4. If your desktop uses GNOME, also trust it:
+#          gio set ~/.local/share/applications/OutClaw.desktop metadata::trusted true
+#     5. Optional: install the icon so the launcher looks right:
+#          mkdir -p ~/.local/share/icons/hicolor/scalable/apps
+#          cp outclaw-icon.svg ~/.local/share/icons/hicolor/scalable/apps/outclaw.svg
+#          gtk-update-icon-cache -f ~/.local/share/icons/hicolor
+#
+# Terminal=true keeps a window open showing OutClaw's welcome text while
+# the dashboard runs in your browser. Closing that window stops OutClaw.
+
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=OutClaw
+Comment=Check your court papers for problems before you file them
+Exec=bash __OUTCLAW_DIR__/launch_desktop.sh
+Icon=outclaw
+Terminal=true
+Categories=Office;
+Keywords=court;legal;papers;audit;self-help;
+StartupNotify=true

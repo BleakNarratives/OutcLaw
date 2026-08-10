@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw · Accountability Engine v3</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Courier+Prime:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --bg:#0e0c09;
+  --bg-card:#1a1410;
+  --bg-sidebar:#0b0a07;
+  --text:#e8e0d4;
+  --gold:#C4A882;
+  --gold-dim:rgba(196,168,130,0.5);
+  --crimson:#6B1A2A;
+  --hot:#a03040;
+  --warm:#a07840;
+  --ok:#6a8a5a;
+  --dim:#6a6058;
+  --dim2:#8a7a6a;
+  --border:rgba(196,168,130,0.14);
+  --border-c:rgba(107,26,42,0.35);
+  --sw:210px;
+}
+
+body{
+  font-family:'Courier Prime',monospace;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  overflow-x:hidden;
+}
+
+/* ── MARBLE ──────────────────────────────────────────── */
+.marble{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  opacity:0.05;
+  background-image:
+    repeating-linear-gradient(127deg,transparent 0,transparent 8px,rgba(196,168,130,.4) 8px,rgba(196,168,130,.4) 9px),
+    repeating-linear-gradient(53deg,transparent 0,transparent 12px,rgba(168,140,110,.3) 12px,rgba(168,140,110,.3) 13px),
+    repeating-linear-gradient(85deg,transparent 0,transparent 22px,rgba(107,26,42,.2) 22px,rgba(107,26,42,.2) 23px);
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+.sidebar{
+  width:var(--sw);
+  background:var(--bg-sidebar);
+  border-right:1px solid var(--border);
+  position:fixed;top:0;left:0;height:100vh;
+  display:flex;flex-direction:column;
+  z-index:100;
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+}
+
+.sb-logo{
+  padding:1.5rem 1.2rem 1.1rem;
+  border-bottom:1px solid var(--border);
+}
+
+.sb-claw{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;letter-spacing:.2em;
+  color:var(--gold);line-height:1;
+}
+
+.sb-sub{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:8px;letter-spacing:.45em;
+  color:var(--crimson);margin-top:.35rem;
+}
+
+.sb-nav{flex:1;padding:.8rem 0;overflow-y:auto;}
+
+.nav-item{
+  display:flex;align-items:center;gap:.65rem;
+  padding:.6rem 1.2rem;
+  cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:11.5px;letter-spacing:.38em;
+  color:var(--dim);
+  border-left:2px solid transparent;
+  transition:all .15s;
+  user-select:none;
+  position:relative;
+}
+.nav-item:hover{color:var(--text);}
+.nav-item.active{
+  color:var(--gold);
+  border-left-color:var(--crimson);
+  background:rgba(196,168,130,.035);
+}
+.nav-dot{
+  width:4px;height:4px;border-radius:50%;
+  background:currentColor;flex-shrink:0;opacity:.5;
+}
+.nav-item.active .nav-dot{background:var(--crimson);opacity:1;}
+
+.nav-badge{
+  margin-left:auto;
+  font-family:'Courier Prime',monospace;
+  font-size:9px;background:var(--crimson);
+  color:var(--gold);padding:1px 5px;
+  letter-spacing:.05em;
+}
+
+.sb-foot{
+  padding:.7rem 1.2rem;
+  border-top:1px solid var(--border);
+  font-size:8.5px;letter-spacing:.22em;
+  color:var(--dim);line-height:1.6;
+}
+
+/* ── HAMBURGER ───────────────────────────────────────── */
+.hamburger{
+  display:none;
+  position:fixed;top:.65rem;left:.65rem;z-index:200;
+  background:var(--bg-card);border:1px solid var(--border);
+  color:var(--gold);padding:.35rem .6rem;
+  cursor:pointer;font-size:15px;letter-spacing:.05em;
+  transition:border-color .15s;
+}
+.hamburger:hover{border-color:var(--gold);}
+
+/* ── MAIN ────────────────────────────────────────────── */
+.main{
+  margin-left:var(--sw);flex:1;
+  min-height:100vh;display:flex;flex-direction:column;
+  position:relative;z-index:1;
+}
+
+/* ── TOPBAR ──────────────────────────────────────────── */
+.topbar{
+  padding:.7rem 2rem;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(14,12,9,.85);
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(6px);
+}
+.tb-title{
+  font-family:'Playfair Display',serif;
+  font-size:1rem;font-weight:700;color:var(--text);
+  letter-spacing:.02em;
+}
+.tb-meta{font-size:9px;letter-spacing:.28em;color:var(--dim);}
+
+/* ── SECTIONS ────────────────────────────────────────── */
+.section{display:none;padding:1.8rem 2rem;max-width:1200px;}
+.section.active{display:block;}
+
+.sec-label{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:9px;letter-spacing:.55em;
+  color:var(--crimson);
+  display:flex;align-items:center;gap:.5rem;
+  margin-bottom:1.5rem;
+}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border-c);}
+
+/* ── KPI GRID ────────────────────────────────────────── */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(175px,1fr));
+  gap:.85rem;margin-bottom:1.5rem;
+}
+
+.kpi-card{
+  background:var(--bg-card);border:1px solid var(--border);
+  padding:1.1rem 1.4rem;position:relative;overflow:hidden;
+}
+.kpi-card::before{
+  content:'';position:absolute;
+  top:0;left:0;width:2px;height:100%;
+  background:var(--crimson);
+}
+.kpi-name{font-size:8.5px;letter-spacing:.35em;color:var(--dim);text-transform:uppercase;margin-bottom:.4rem;}
+.kpi-val{
+  font-family:'Playfair Display',serif;
+  font-size:2.1rem;font-weight:700;
+  line-height:1;color:var(--gold);letter-spacing:-.02em;
+}
+.kpi-val.hot{color:var(--hot);}
+.kpi-val.ok{color:var(--ok);}
+.kpi-sub{font-size:9px;color:var(--dim);margin-top:.3rem;line-height:1.4;}
+
+/* ── TWO COL ─────────────────────────────────────────── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:1.5rem;}
+
+/* ── PANEL ───────────────────────────────────────────── */
+.panel{background:var(--bg-card);border:1px solid var(--border);padding:1.3rem 1.5rem;}
+.panel-label{
+  font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:.48em;
+  color:var(--crimson);display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;
+}
+.panel-label::after{content:'';flex:1;height:1px;background:var(--border-c);}
+
+/* ── THREADS ─────────────────────────────────────────── */
+.thread{
+  border-left:2px solid var(--crimson);
+  padding:.6rem .85rem;margin-bottom:.6rem;
+  background:rgba(196,168,130,.03);
+}
+.thread.pend{border-left-color:var(--warm);}
+.thread.denied{border-left-color:var(--hot);}
+.thread.done{border-left-color:#3a3530;opacity:.55;}
+.thread-meta{font-size:9px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;margin-bottom:.25rem;}
+.thread-body{font-size:10.5px;color:#c0b4a0;line-height:1.5;}
+
+.oath{
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:11.5px;color:#6a5a4a;line-height:1.7;
+  border-left:1px solid #4a3828;padding-left:.85rem;margin-top:1.1rem;
+}
+
+/* ── STAT ROW ────────────────────────────────────────── */
+.stat-row{margin-bottom:.9rem;}
+.stat-name{font-size:8.5px;letter-spacing:.28em;color:var(--dim);text-transform:uppercase;margin-bottom:.2rem;}
+.stat-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--gold);}
+.stat-val.hot{color:var(--hot);}
+
+/* ── FILINGS ─────────────────────────────────────────── */
+.filter-bar{
+  display:flex;gap:.7rem;flex-wrap:wrap;
+  align-items:center;margin-bottom:1rem;
+}
+.f-label{font-size:8.5px;letter-spacing:.28em;color:var(--dim);text-transform:uppercase;}
+.f-select,.f-input{
+  background:var(--bg-card);border:1px solid var(--border);
+  color:var(--text);font-family:'Courier Prime',monospace;
+  font-size:10px;letter-spacing:.08em;padding:.35rem .65rem;outline:none;
+}
+.f-select:focus,.f-input:focus{border-color:rgba(196,168,130,.35);}
+
+.table-wrap{background:var(--bg-card);border:1px solid var(--border);overflow-x:auto;}
+.data-table{width:100%;border-collapse:collapse;font-size:10.5px;}
+.data-table th{
+  font-family:'Bebas Neue',sans-serif;font-size:8.5px;letter-spacing:.4em;
+  color:var(--crimson);text-transform:uppercase;
+  padding:.75rem 1rem;border-bottom:1px solid var(--border);
+  text-align:left;cursor:pointer;user-select:none;white-space:nowrap;
+}
+.data-table th:hover{color:var(--gold);}
+.data-table th.sorted{color:var(--gold);}
+.data-table td{
+  padding:.6rem 1rem;border-bottom:1px solid rgba(196,168,130,.05);
+  color:#bdb0a0;vertical-align:top;
+}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:rgba(196,168,130,.03);}
+
+.pill{
+  font-family:'Bebas Neue',sans-serif;font-size:7.5px;letter-spacing:.3em;
+  padding:2px 6px;border:1px solid;display:inline-block;
+}
+.pill.open{border-color:var(--crimson);color:var(--crimson);}
+.pill.pending{border-color:var(--warm);color:var(--warm);}
+.pill.indexed{border-color:#3a3530;color:var(--dim);}
+.pill.denied{border-color:var(--hot);color:var(--hot);}
+.pill.acknowledged{border-color:#3a4a2e;color:var(--ok);}
+
+.table-foot{font-size:9px;color:var(--dim);letter-spacing:.12em;margin-top:.6rem;}
+
+/* ── CHARTS ──────────────────────────────────────────── */
+.chart-grid-main{
+  display:grid;grid-template-columns:3fr 2fr;gap:.85rem;margin-bottom:.85rem;
+}
+.chart-card{background:var(--bg-card);border:1px solid var(--border);padding:1.3rem 1.5rem;}
+.chart-title{
+  font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:.45em;
+  color:var(--crimson);margin-bottom:1.1rem;
+}
+.chart-wrap{position:relative;max-height:260px;}
+.chart-wrap canvas{max-height:260px;}
+
+/* ── RUNTIME ─────────────────────────────────────────── */
+.rt-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:.85rem;margin-bottom:1rem;
+}
+.rt-card{background:var(--bg-card);border:1px solid var(--border);padding:1rem 1.2rem;}
+.rt-name{
+  font-size:8.5px;letter-spacing:.28em;color:var(--dim);
+  text-transform:uppercase;margin-bottom:.3rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.rt-val{
+  font-family:'Playfair Display',serif;font-size:1.8rem;
+  font-weight:700;color:var(--gold);line-height:1;
+}
+.rt-val.hot{color:var(--hot);}
+
+.pulse{
+  width:5px;height:5px;border-radius:50%;flex-shrink:0;
+  animation:pulse 1.8s ease-in-out infinite;
+}
+.pulse.ok-c{background:var(--ok);}
+.pulse.hot-c{background:var(--hot);}
+.pulse.warn-c{background:var(--warm);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+
+.ticker-wrap{
+  background:var(--bg);border:1px solid var(--border);
+  overflow:hidden;margin-bottom:1rem;
+}
+.ticker-label{
+  font-family:'Bebas Neue',sans-serif;font-size:9px;
+  letter-spacing:.45em;color:var(--crimson);
+  padding:.4rem 1.2rem .25rem;
+}
+.ticker-scroll{
+  display:flex;flex-direction:column;max-height:210px;
+  overflow:hidden;position:relative;
+  border-top:1px solid var(--border-c);
+}
+.ticker-scroll::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:28px;
+  background:linear-gradient(transparent,var(--bg));pointer-events:none;
+}
+.ticker-line{
+  font-family:'Courier Prime',monospace;font-size:10px;
+  letter-spacing:.05em;padding:.28rem 1.2rem;white-space:nowrap;
+  border-bottom:1px solid rgba(196,168,130,.04);
+}
+.ticker-line.info{color:#8a9a7a;}
+.ticker-line.warn{color:var(--warm);}
+.ticker-line.err{color:var(--hot);}
+.ticker-line.ok{color:var(--ok);}
+
+/* ── SETTINGS ────────────────────────────────────────── */
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.85rem;}
+.s-row{margin-bottom:.9rem;}
+.s-label{font-size:8.5px;letter-spacing:.28em;color:var(--dim);text-transform:uppercase;margin-bottom:.35rem;}
+.s-input{
+  width:100%;background:#0b0a07;border:1px solid var(--border);
+  color:var(--text);font-family:'Courier Prime',monospace;
+  font-size:11px;padding:.45rem .75rem;outline:none;
+}
+.s-input:focus{border-color:rgba(196,168,130,.35);}
+
+.toggle-row{display:flex;align-items:center;gap:.9rem;}
+.toggle{
+  width:34px;height:17px;background:#1a1410;
+  border:1px solid var(--border);border-radius:9px;
+  position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;
+}
+.toggle.on{background:var(--crimson);}
+.toggle-knob{
+  width:13px;height:13px;border-radius:50%;
+  background:var(--dim);position:absolute;
+  top:1px;left:1px;transition:all .2s;
+}
+.toggle.on .toggle-knob{left:18px;background:var(--gold);}
+.toggle-text{font-size:10.5px;color:var(--text);}
+
+.save-btn{
+  background:var(--crimson);border:none;color:var(--gold);
+  font-family:'Bebas Neue',sans-serif;font-size:11px;
+  letter-spacing:.4em;padding:.45rem 1.4rem;cursor:pointer;
+  margin-top:.6rem;transition:background .15s;
+}
+.save-btn:hover{background:#8a1a2a;}
+.save-confirm{
+  font-size:9px;letter-spacing:.2em;color:var(--ok);
+  margin-left:.8rem;opacity:0;transition:opacity .3s;
+}
+
+/* ── SCROLLBAR ───────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border-c);}
+
+/* ── RESPONSIVE ──────────────────────────────────────── */
+@media(max-width:900px){
+  .two-col,.chart-grid-main{grid-template-columns:1fr;}
+}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:none;}
+  .main{margin-left:0;}
+  .hamburger{display:block;}
+  .section{padding:1rem;}
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .topbar{padding:.6rem 1rem .6rem 3rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="marble"></div>
+<button class="hamburger" id="hamburger">≡</button>
+
+<!-- ─── SIDEBAR ─────────────────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-claw">OpenClaw</div>
+    <div class="sb-sub">Accountability Engine · v3.molt</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-item active" data-sec="overview">
+      <div class="nav-dot"></div>OVERVIEW
+    </div>
+    <div class="nav-item" data-sec="filings">
+      <div class="nav-dot"></div>FILINGS
+      <span class="nav-badge">14</span>
+    </div>
+    <div class="nav-item" data-sec="analytics">
+      <div class="nav-dot"></div>ANALYTICS
+    </div>
+    <div class="nav-item" data-sec="runtime">
+      <div class="nav-dot"></div>RUNTIME
+    </div>
+    <div class="nav-item" data-sec="settings">
+      <div class="nav-dot"></div>SETTINGS
+    </div>
+  </nav>
+  <div class="sb-foot">MOLT / ZEROCLAW / JANE<br>NATSERVER · FORGE · SPINDLE</div>
+</aside>
+
+<!-- ─── MAIN ─────────────────────────────────────────────────────────── -->
+<div class="main" id="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-title">The Accountability Engine</div>
+    <div class="tb-meta" id="tbMeta">BROWN HAT PROTOCOL · GROUND UPWARD</div>
+  </div>
+
+  <!-- ═══ OVERVIEW ══════════════════════════════════════════════════════ -->
+  <section class="section active" id="sec-overview">
+    <div class="sec-label">System Overview</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-name">Filings Submitted</div>
+        <div class="kpi-val">14</div>
+        <div class="kpi-sub">6 open · 4 ack · 2 pending · 1 denied · 1 indexed</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-name">Days Overdue</div>
+        <div class="kpi-val hot" id="daysOverdue">—</div>
+        <div class="kpi-sub">Statutory window: 3 business days</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-name">Entities Under Audit</div>
+        <div class="kpi-val">6</div>
+        <div class="kpi-sub">District court · County clerk · 4 corporate</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-name">Oath Breach Index</div>
+        <div class="kpi-val hot">HIGH</div>
+        <div class="kpi-sub">3 names flagged on merit cross-ref</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-label">Active Threads</div>
+        <div class="thread">
+          <div class="thread-meta">KORA · Merit Selection · <span style="color:var(--crimson)">OPEN</span></div>
+          <div class="thread-body">30th District records 2013–2020. Window running. AG complaint staged.</div>
+        </div>
+        <div class="thread pend">
+          <div class="thread-meta">IV-D Harvest · <span style="color:var(--warm)">PENDING</span></div>
+          <div class="thread-body">Federal allocation vs bed-count variance. Corporate rebrand crosswalk in progress.</div>
+        </div>
+        <div class="thread denied">
+          <div class="thread-meta">KORA · Merit 3rd Pull · <span style="color:var(--hot)">DENIED</span></div>
+          <div class="thread-body">K.S.A. 45-222 denial logged. AG appeal draft staged.</div>
+        </div>
+        <div class="thread done">
+          <div class="thread-meta">County Clerk Archive · <span style="color:var(--dim)">INDEXED</span></div>
+          <div class="thread-body">Pull complete. Off-device. ZeroClaw confirmed. 412 records.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">Ledger Summary</div>
+        <div class="stat-row">
+          <div class="stat-name">Filing velocity (30d)</div>
+          <div class="stat-val">+3.2 <span style="font-size:.9rem;color:var(--dim)">/ week</span></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-name">Avg response time</div>
+          <div class="stat-val hot">14.2 <span style="font-size:.9rem;color:var(--dim)">days</span></div>
+          <div class="kpi-sub" style="margin-top:.15rem;">Statutory max: 3 business days</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-name">ZeroClaw records indexed</div>
+          <div class="stat-val" id="ov-records">1,259</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-name">Open entity cross-refs</div>
+          <div class="stat-val">7</div>
+        </div>
+        <div class="oath">
+          "Those who preach honor<br>must live inside its cost."
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FILINGS ════════════════════════════════════════════════════════ -->
+  <section class="section" id="sec-filings">
+    <div class="sec-label">Filing Ledger</div>
+
+    <div class="filter-bar">
+      <span class="f-label">Status</span>
+      <select class="f-select" id="fStatus">
+        <option value="">All</option>
+        <option value="open">Open</option>
+        <option value="pending">Pending</option>
+        <option value="indexed">Indexed</option>
+        <option value="denied">Denied</option>
+        <option value="acknowledged">Acknowledged</option>
+      </select>
+      <span class="f-label">Entity Type</span>
+      <select class="f-select" id="fEntity">
+        <option value="">All</option>
+        <option value="court">Courts</option>
+        <option value="county">County</option>
+        <option value="corp">Corporate</option>
+        <option value="state">State Agency</option>
+      </select>
+      <input type="text" class="f-input" id="fSearch" placeholder="Search ref / entity / notes…" style="flex:1;min-width:160px;">
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th data-col="id">REF ↕</th>
+            <th data-col="entity">ENTITY ↕</th>
+            <th data-col="type">TYPE ↕</th>
+            <th data-col="status">STATUS ↕</th>
+            <th data-col="filed">FILED ↕</th>
+            <th data-col="days">DAYS ↕</th>
+            <th>NOTES</th>
+          </tr>
+        </thead>
+        <tbody id="fBody"></tbody>
+      </table>
+    </div>
+    <div class="table-foot" id="fCount"></div>
+  </section>
+
+  <!-- ═══ ANALYTICS ══════════════════════════════════════════════════════ -->
+  <section class="section" id="sec-analytics">
+    <div class="sec-label">Analytics</div>
+    <div class="chart-grid-main">
+      <div class="chart-card">
+        <div class="chart-title">Monthly Filing Activity — 2026</div>
+        <div class="chart-wrap"><canvas id="chartTimeline"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Status Distribution</div>
+        <div class="chart-wrap" style="display:flex;align-items:center;justify-content:center;max-height:260px;">
+          <canvas id="chartStatus" style="max-width:220px;max-height:240px;"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Response Latency by Entity — Days Pending vs Days to Response</div>
+      <div class="chart-wrap"><canvas id="chartLatency"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ═══ RUNTIME ════════════════════════════════════════════════════════ -->
+  <section class="section" id="sec-runtime">
+    <div class="sec-label">Molt / Claw Runtime — Debug Feed</div>
+
+    <div class="rt-grid">
+      <div class="rt-card">
+        <div class="rt-name"><div class="pulse ok-c"></div>Active Agents</div>
+        <div class="rt-val" id="rtAgents">0</div>
+      </div>
+      <div class="rt-card">
+        <div class="rt-name">Session Uptime</div>
+        <div class="rt-val" id="rtUptime">00:00:00</div>
+      </div>
+      <div class="rt-card">
+        <div class="rt-name">Molt Cycles</div>
+        <div class="rt-val" id="rtMolt">0</div>
+      </div>
+      <div class="rt-card">
+        <div class="rt-name">Outputs</div>
+        <div class="rt-val" id="rtOutputs">0</div>
+      </div>
+      <div class="rt-card">
+        <div class="rt-name">
+          <div class="pulse hot-c" id="errPulse" style="opacity:0;transition:opacity .3s;"></div>
+          Errors
+        </div>
+        <div class="rt-val hot" id="rtErrors">0</div>
+      </div>
+      <div class="rt-card">
+        <div class="rt-name"><div class="pulse ok-c"></div>ZeroClaw Records</div>
+        <div class="rt-val" id="rtRecords">412</div>
+      </div>
+    </div>
+
+    <div class="ticker-wrap">
+      <div class="ticker-label">Molt / Claw / Jane — Live Debug Feed</div>
+      <div class="ticker-scroll" id="tickerScroll"></div>
+    </div>
+  </section>
+
+  <!-- ═══ SETTINGS ═══════════════════════════════════════════════════════ -->
+  <section class="section" id="sec-settings">
+    <div class="sec-label">System Configuration</div>
+
+    <div class="settings-grid">
+      <div class="panel">
+        <div class="panel-label">API Endpoints</div>
+        <div class="s-row">
+          <div class="s-label">FastAPI Spine</div>
+          <input class="s-input" type="text" value="127.0.0.1:8000">
+        </div>
+        <div class="s-row">
+          <div class="s-label">FEP Field Server</div>
+          <input class="s-input" type="text" value="127.0.0.1:7070">
+        </div>
+        <div class="s-row">
+          <div class="s-label">KerygmaLM Flask</div>
+          <input class="s-input" type="text" value="127.0.0.1:8080">
+        </div>
+        <div class="s-row">
+          <div class="s-label">OpenRouter Model</div>
+          <input class="s-input" type="text" value="qwen/qwen3-coder:free">
+        </div>
+        <div class="s-row">
+          <div class="s-label">Groq Fallback Model</div>
+          <input class="s-input" type="text" value="llama-3.3-70b-versatile">
+        </div>
+        <button class="save-btn" onclick="saveFlash(this)">SAVE ENDPOINTS</button>
+        <span class="save-confirm" id="sc1">SAVED</span>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">Rule Engine</div>
+        <div class="s-row">
+          <div class="s-label">Statutory Window (days)</div>
+          <input class="s-input" type="number" value="3">
+        </div>
+        <div class="s-row">
+          <div class="s-label">Oath Breach Threshold</div>
+          <input class="s-input" type="number" value="2">
+        </div>
+        <div class="s-row">
+          <div class="s-label">ZeroClaw Dispatch</div>
+          <div class="toggle-row">
+            <div class="toggle on" data-lbl="zcl"><div class="toggle-knob"></div></div>
+            <div class="toggle-text" id="lbl-zcl">Enabled</div>
+          </div>
+        </div>
+        <div class="s-row">
+          <div class="s-label">Forge Logging</div>
+          <div class="toggle-row">
+            <div class="toggle on" data-lbl="fge"><div class="toggle-knob"></div></div>
+            <div class="toggle-text" id="lbl-fge">Enabled</div>
+          </div>
+        </div>
+        <div class="s-row">
+          <div class="s-label">Auto-AG Complaint Stage</div>
+          <div class="toggle-row">
+            <div class="toggle" data-lbl="agc"><div class="toggle-knob"></div></div>
+            <div class="toggle-text" id="lbl-agc">Disabled</div>
+          </div>
+        </div>
+        <div class="s-row">
+          <div class="s-label">Vapor Safety Lock</div>
+          <div class="toggle-row">
+            <div class="toggle on" data-lbl="vsl"><div class="toggle-knob"></div></div>
+            <div class="toggle-text" id="lbl-vsl">Enabled</div>
+          </div>
+        </div>
+        <button class="save-btn" onclick="saveFlash(this)">SAVE RULES</button>
+        <span class="save-confirm" id="sc2">SAVED</span>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /main -->
+
+<script>
+// ─── FILINGS DATA ──────────────────────────────────────────────────────────
+const TODAY = new Date('2026-07-31');
+function dSince(d){ return Math.floor((TODAY - new Date(d))/86400000); }
+
+const FILINGS = [
+  {id:'KORA-001',entity:'30th District Court',et:'court',type:'KORA Records Request',status:'open',filed:'2026-07-20',notes:'AG complaint staged. No response. Statutory window exceeded.'},
+  {id:'KORA-002',entity:'County Clerk',et:'county',type:'KORA Archive Pull',status:'indexed',filed:'2026-05-14',notes:'Pull complete. Off-device. ZeroClaw confirmed. 412 records.'},
+  {id:'KORA-003',entity:'Merit Selection Committee',et:'court',type:'KORA Records Request',status:'denied',filed:'2026-07-01',notes:'K.S.A. 45-222 denial logged. AG appeal draft staged.'},
+  {id:'KORA-004',entity:'30th District Court',et:'court',type:'KORA Supplemental Pull',status:'open',filed:'2026-07-25',notes:'Cross-ref 2019 appointments. No response.'},
+  {id:'KORA-005',entity:'County Clerk',et:'county',type:'KORA Supplemental',status:'acknowledged',filed:'2026-05-28',notes:'ACK received day 8. Awaiting production.'},
+  {id:'KORA-006',entity:'District Court Finance',et:'court',type:'KORA Financial Records',status:'open',filed:'2026-07-20',notes:'Fee schedule dispute. $0.125/page contested.'},
+  {id:'IVD-001',entity:'Dept. of Social Services',et:'state',type:'IV-D Audit Request',status:'pending',filed:'2026-07-10',notes:'Federal allocation vs bed-count variance. Crosswalk in progress.'},
+  {id:'IVD-002',entity:'Dept. of Social Services',et:'state',type:'IV-D Transaction Audit',status:'open',filed:'2026-07-18',notes:'Transaction ID gap 2016-Q3. Logging to Forge.'},
+  {id:'IVD-003',entity:"Children's Services Agency",et:'state',type:'IV-D Bed Count Audit',status:'acknowledged',filed:'2026-07-15',notes:'Bed-count vs allocation variance. Certified mail sent.'},
+  {id:'CORP-001',entity:'Saint Francis / EmberHope',et:'corp',type:'Corporate Audit',status:'open',filed:'2026-06-15',notes:'Rebrand crosswalk in progress. Transition record flagged by Scout.'},
+  {id:'CORP-002',entity:'Meridian Residential',et:'corp',type:'Corporate Audit',status:'pending',filed:'2026-06-28',notes:'Board overlap cross-ref pending. 2 names matched ethics cmte.'},
+  {id:'CORP-003',entity:'Prairie View Partners',et:'corp',type:'Corporate Audit',status:'open',filed:'2026-07-05',notes:'Ethics committee cross-ref in progress. Auditor queued.'},
+  {id:'CORP-004',entity:'SunPath Services LLC',et:'corp',type:'Corporate Audit',status:'acknowledged',filed:'2026-06-10',notes:'ACK received. Awaiting document production.'},
+  {id:'CORP-005',entity:'EmberHope Foundation',et:'corp',type:'IRS 990 Cross-Reference',status:'acknowledged',filed:'2026-07-12',notes:'990 cross-ref queued. Board overlap: 2 flagged names.'},
+];
+
+// compute days overdue for overview KPI (days past statutory window=3, for open filings)
+const openDaysMax = FILINGS
+  .filter(f => f.status === 'open')
+  .map(f => dSince(f.filed) - 3)
+  .filter(d => d > 0);
+document.getElementById('daysOverdue').textContent =
+  openDaysMax.length ? Math.max(...openDaysMax) : '—';
+
+// ─── NAV ───────────────────────────────────────────────────────────────────
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('.section');
+const sidebar  = document.getElementById('sidebar');
+
+navItems.forEach(item => {
+  item.addEventListener('click', () => {
+    navItems.forEach(n => n.classList.remove('active'));
+    sections.forEach(s => s.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('sec-' + item.dataset.sec).classList.add('active');
+    if(item.dataset.sec === 'analytics' && !chartsBuilt) buildCharts();
+    if(window.innerWidth <= 768) sidebar.classList.remove('open');
+  });
+});
+
+document.getElementById('hamburger').addEventListener('click',
+  () => sidebar.classList.toggle('open'));
+
+// ─── FILINGS TABLE ─────────────────────────────────────────────────────────
+let sortCol = 'days', sortDir = 1;
+
+const STATUS_ORDER = {open:0,pending:1,denied:2,acknowledged:3,indexed:4};
+
+function renderTable(){
+  const sf = document.getElementById('fStatus').value;
+  const ef = document.getElementById('fEntity').value;
+  const qf = document.getElementById('fSearch').value.toLowerCase();
+
+  let rows = FILINGS.filter(r => {
+    if(sf && r.status !== sf) return false;
+    if(ef && r.et !== ef) return false;
+    if(qf && !(r.id+r.entity+r.notes).toLowerCase().includes(qf)) return false;
+    return true;
+  });
+
+  rows.sort((a,b) => {
+    let va, vb;
+    if(sortCol === 'days'){ va = dSince(a.filed); vb = dSince(b.filed); }
+    else if(sortCol === 'status'){ va = STATUS_ORDER[a.status]||99; vb = STATUS_ORDER[b.status]||99; }
+    else { va = (a[sortCol]||'').toLowerCase(); vb = (b[sortCol]||'').toLowerCase(); }
+    return va < vb ? -sortDir : va > vb ? sortDir : 0;
+  });
+
+  document.getElementById('fBody').innerHTML = rows.map(r => {
+    const d = dSince(r.filed);
+    const dc = d > 14 ? 'var(--hot)' : d > 7 ? 'var(--warm)' : 'var(--dim2)';
+    return `<tr>
+      <td style="font-family:'Bebas Neue',sans-serif;letter-spacing:.18em;color:var(--gold);font-size:10.5px;">${r.id}</td>
+      <td style="max-width:160px;">${r.entity}</td>
+      <td style="color:var(--dim2);max-width:150px;">${r.type}</td>
+      <td><span class="pill ${r.status}">${r.status.toUpperCase()}</span></td>
+      <td style="color:var(--dim2);white-space:nowrap;">${r.filed}</td>
+      <td style="color:${dc};font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;">${d}</td>
+      <td style="color:var(--dim2);font-size:9.5px;max-width:240px;">${r.notes}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('fCount').textContent =
+    `Showing ${rows.length} of ${FILINGS.length} filings`;
+}
+
+document.querySelectorAll('.data-table th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    sortDir = sortCol === col ? -sortDir : 1;
+    sortCol = col;
+    document.querySelectorAll('.data-table th').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    renderTable();
+  });
+});
+['fStatus','fEntity','fSearch'].forEach(id =>
+  document.getElementById(id).addEventListener('input', renderTable));
+renderTable();
+
+// ─── CHART.JS ──────────────────────────────────────────────────────────────
+let chartsBuilt = false;
+
+Chart.defaults.color = '#8a7a6a';
+Chart.defaults.borderColor = 'rgba(196,168,130,0.1)';
+
+const TIP = {
+  backgroundColor:'#1a1410',
+  borderColor:'rgba(196,168,130,0.25)',
+  borderWidth:1,
+  titleFont:{family:'Bebas Neue',size:12},
+  bodyFont:{family:'Courier Prime',size:11},
+  titleColor:'#C4A882',bodyColor:'#e8e0d4',padding:10,
+};
+
+function buildCharts(){
+  chartsBuilt = true;
+
+  // ── TIMELINE (line) ──────────────────────────────────────
+  new Chart(document.getElementById('chartTimeline').getContext('2d'), {
+    type:'line',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','May','Jun','Jul'],
+      datasets:[
+        {
+          label:'Filings Submitted',
+          data:[0,1,2,1,3,4,3],
+          borderColor:'#C4A882',
+          backgroundColor:'rgba(196,168,130,0.07)',
+          borderWidth:2,fill:true,tension:.35,
+          pointRadius:4,pointHoverRadius:7,
+          pointBackgroundColor:'#C4A882',pointBorderColor:'#0e0c09',pointBorderWidth:1,
+        },
+        {
+          label:'Responses Received',
+          data:[0,0,1,1,2,1,1],
+          borderColor:'#6a8a5a',
+          backgroundColor:'rgba(106,138,90,0.06)',
+          borderWidth:2,fill:true,tension:.35,
+          pointRadius:4,pointHoverRadius:7,
+          pointBackgroundColor:'#6a8a5a',pointBorderColor:'#0e0c09',pointBorderWidth:1,
+        },
+        {
+          label:'Denials',
+          data:[0,0,0,0,0,0,1],
+          borderColor:'#a03040',
+          backgroundColor:'rgba(160,48,64,0.05)',
+          borderWidth:2,fill:true,tension:.35,
+          pointRadius:4,pointHoverRadius:7,
+          pointBackgroundColor:'#a03040',pointBorderColor:'#0e0c09',pointBorderWidth:1,
+        },
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      animation:{duration:700},
+      plugins:{legend:{position:'bottom',labels:{padding:18,font:{family:'Courier Prime',size:10},boxWidth:10,usePointStyle:true}},tooltip:TIP},
+      scales:{
+        x:{grid:{color:'rgba(196,168,130,0.07)'},ticks:{font:{family:'Courier Prime',size:10}}},
+        y:{grid:{color:'rgba(196,168,130,0.07)'},ticks:{font:{family:'Courier Prime',size:10},stepSize:1},beginAtZero:true},
+      }
+    }
+  });
+
+  // ── STATUS DOUGHNUT ──────────────────────────────────────
+  new Chart(document.getElementById('chartStatus').getContext('2d'), {
+    type:'doughnut',
+    data:{
+      labels:['Open','Pending','Acknowledged','Denied','Indexed'],
+      datasets:[{
+        data:[6,2,4,1,1],
+        backgroundColor:['#6B1A2A','#a07840','#3a4a2e','#a03040','#3a3530'],
+        borderColor:'#0e0c09',borderWidth:3,
+        hoverBorderColor:'#1a1410',
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,cutout:'64%',
+      animation:{duration:700},
+      plugins:{
+        legend:{position:'bottom',labels:{padding:12,font:{family:'Courier Prime',size:10},boxWidth:10}},
+        tooltip:TIP,
+      }
+    }
+  });
+
+  // ── LATENCY BAR ──────────────────────────────────────────
+  new Chart(document.getElementById('chartLatency').getContext('2d'), {
+    type:'bar',
+    data:{
+      labels:['30th Dist. Court','County Clerk','DSS','Saint Francis','Meridian Res.','Merit Cmte'],
+      datasets:[
+        {
+          label:'Days Pending (oldest filing)',
+          data:[11,77,21,46,33,30],
+          backgroundColor:'rgba(196,168,130,0.14)',
+          borderColor:'rgba(196,168,130,0.4)',
+          borderWidth:1,borderRadius:0,
+        },
+        {
+          label:'Days to First Response',
+          data:[null,8,null,null,null,14],
+          backgroundColor:'rgba(107,26,42,0.65)',
+          borderColor:'#6B1A2A',
+          borderWidth:1,borderRadius:0,
+        },
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      animation:{duration:700},
+      plugins:{
+        legend:{position:'bottom',labels:{padding:16,font:{family:'Courier Prime',size:10},boxWidth:10}},
+        tooltip:TIP,
+      },
+      scales:{
+        x:{grid:{color:'rgba(196,168,130,0.07)'},ticks:{font:{family:'Courier Prime',size:9},maxRotation:15}},
+        y:{
+          grid:{color:'rgba(196,168,130,0.07)'},
+          ticks:{font:{family:'Courier Prime',size:10}},
+          beginAtZero:true,
+          title:{display:true,text:'days',color:'var(--dim)',font:{family:'Courier Prime',size:10}},
+        },
+      }
+    }
+  });
+}
+
+// ─── RUNTIME TICKER ────────────────────────────────────────────────────────
+const LOGS = [
+  {t:'ok',  m:'[MOLT] ZeroClaw index confirmed. Off-device sync stable.'},
+  {t:'info',m:'[SCOUT] Rotation initialized. Archive depth: 2013-01-01.'},
+  {t:'info',m:'[IVD] IV-D harvester spawned. Targeting federal allocation ledger.'},
+  {t:'warn',m:'[KORA] No response from 30th District. AG complaint staged.'},
+  {t:'info',m:'[AUDITOR] Merit committee log pull: 847 records queued.'},
+  {t:'ok',  m:'[MOLT] Agent cycle 1 complete. Handoff → Auditor_Agent.'},
+  {t:'err', m:'[OLLAMA] Connection timeout. Retrying on port 11434. (classic)'},
+  {t:'info',m:'[SCOUT] Flagged: Saint Francis / EmberHope transition record.'},
+  {t:'warn',m:'[IVD] Transaction ID gap detected 2016-Q3. Logging to Forge.'},
+  {t:'ok',  m:'[MOLT] Agent cycle 2 complete. Scout respawned.'},
+  {t:'info',m:'[AUDITOR] Cross-ref: 3 names matched ethics committee board.'},
+  {t:'err', m:'[OLLAMA] Port 11434 refused again. Consider not being Ollama.'},
+  {t:'ok',  m:'[CLAW] Distributed index updated. 412 records committed.'},
+  {t:'info',m:'[FINANCE] Fee estimate queued: $0.125/page. 1,240 pages estimated.'},
+  {t:'warn',m:'[KORA] Denial received. Logging under K.S.A. 45-222.'},
+  {t:'ok',  m:'[MOLT] Agent cycle 3 complete. IV-D Harvester respawned.'},
+  {t:'info',m:'[SCOUT] Archive depth reached 2017-06. Continuing rotation.'},
+  {t:'err', m:'[OLLAMA] num_ctx too large for 3.4GB RAM. Retrying with ctx=512.'},
+  {t:'ok',  m:'[CLAW] ZeroClaw heartbeat confirmed. Vapor safety: active.'},
+  {t:'info',m:'[AUDITOR] Goering cross-ref: 2 additional board overlaps found.'},
+  {t:'ok',  m:'[JANE] Intent routed. Dispatch confirmed on channel #oversight.'},
+  {t:'warn',m:'[SD-CARD] FUSE mount slow. Pull-to-home-edit-push pattern active.'},
+  {t:'info',m:'[SPINDLE] Outreach queued. Pytch / Twoie standing by.'},
+  {t:'ok',  m:'[MOLT] Agent cycle 4 complete. Forge recycling 2 failed tasks.'},
+  {t:'info',m:'[CLAW] Cross-ref ledger updated. 7 entity overlaps logged.'},
+  {t:'warn',m:'[IVD] Bed-count variance widening. Escalating to Spindle.'},
+  {t:'ok',  m:'[FORGE] Failure recycled. 3 tasks re-queued successfully.'},
+];
+
+const tickerScroll = document.getElementById('tickerScroll');
+let li=0, molts=0, outputs=0, errors=0;
+const t0 = Date.now();
+
+function addLog(){
+  const log = LOGS[li++ % LOGS.length];
+  const div = document.createElement('div');
+  div.className = 'ticker-line '+log.t;
+  div.textContent = new Date().toTimeString().slice(0,8)+'  '+log.m;
+  tickerScroll.appendChild(div);
+  if(tickerScroll.children.length > 20) tickerScroll.removeChild(tickerScroll.firstChild);
+
+  if(log.t==='ok'){
+    molts++; outputs++;
+    document.getElementById('rtMolt').textContent = molts;
+    document.getElementById('rtRecords').textContent = (412 + molts*3).toLocaleString();
+    document.getElementById('ov-records').textContent = (1259 + molts*3).toLocaleString();
+  }
+  if(log.t==='err'){
+    errors++;
+    document.getElementById('rtErrors').textContent = errors;
+    const ep = document.getElementById('errPulse');
+    ep.style.opacity='1';
+    setTimeout(()=>ep.style.opacity='0',1400);
+  }
+  if(log.t==='info'||log.t==='ok') outputs++;
+  document.getElementById('rtOutputs').textContent = outputs;
+}
+
+function tick(){
+  const e = Math.floor((Date.now()-t0)/1000);
+  document.getElementById('rtUptime').textContent =
+    String(Math.floor(e/3600)).padStart(2,'0')+':'+
+    String(Math.floor((e%3600)/60)).padStart(2,'0')+':'+
+    String(e%60).padStart(2,'0');
+  document.getElementById('rtAgents').textContent = Math.floor(Math.random()*4)+2;
+}
+
+function updateTopbar(){
+  document.getElementById('tbMeta').textContent =
+    'BROWN HAT PROTOCOL · '+new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+// boot
+addLog();addLog();addLog();addLog();
+setInterval(addLog, 2200);
+setInterval(tick, 1000);
+setInterval(updateTopbar, 1000);
+updateTopbar(); tick();
+
+// ─── TOGGLES ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.classList.toggle('on');
+    const lbl = btn.dataset.lbl;
+    document.getElementById('lbl-'+lbl).textContent =
+      btn.classList.contains('on') ? 'Enabled' : 'Disabled';
+  });
+});
+
+// ─── SAVE FLASH ────────────────────────────────────────────────────────────
+let saveIdx = 0;
+const saveConfirms = document.querySelectorAll('.save-confirm');
+function saveFlash(btn){
+  const id = btn.nextElementSibling.id;
+  const el = document.getElementById(id);
+  el.style.opacity = '1';
+  setTimeout(()=>el.style.opacity='0', 2000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+.vercel
+
+# Generated Python and virtual-environment state.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Local logs, reports, databases, and tool state.
+*.log
+
+# Local OutClaw provider credentials.
+credentials.env
+*.credentials.env
+*.log.*
+*.db
+*.sqlite
+*.sqlite3
+
+# Local Mel case evidence — keep raw PII and original media out of version control.
+# These rules protect new/untracked files; remove already-tracked evidence with
+# care and verify with `git ls-files` before publishing this directory.
+case_data/arrest_report_*.txt
+!case_data/arrest_report_*.redacted.txt
+case_data/*.jpg
+case_data/*.jpeg
+case_data/*.JPG
+case_data/*.JPEG
