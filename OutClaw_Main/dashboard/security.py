@@ -9,6 +9,7 @@ Design Philosophy: Defense in depth with whitelisting over blacklisting.
 
 import re
 import tempfile
+import time
 from pathlib import Path
 from typing import Optional, Pattern
 import logging
@@ -285,22 +286,59 @@ class SecureInput:
         
         return text
     
+    # ── rate limiter (sliding window, per-operation) ──────────────────
+
+    _rate_buckets: dict[str, list[float]] = {}
+    _rate_window: float = 60.0  # seconds
+
     @classmethod
     def rate_limit_check(cls, operation: str, max_per_minute: int = 60) -> bool:
         """
-        Simple rate limiting for API operations.
-        
+        Sliding-window rate limiter — one bucket per operation.
+
+        Tracks request timestamps in a 60-second window. When the window
+        contains more than *max_per_minute* timestamps, the check returns
+        False (rate limited). Old timestamps are pruned on every check so
+        memory never grows unbounded.
+
+        Thread-safe on CPython (GIL protects list append/pop) but not
+        safe under free-threading — sufficient for a single-process
+        Crostini dashboard.
+
         Args:
             operation: Operation identifier (e.g., 'courtlistener_lookup')
-            max_per_minute: Maximum operations per minute
-            
+            max_per_minute: Maximum allowed requests in the window
+
         Returns:
-            True if operation is allowed, False if rate limited
+            True if the request is allowed, False if rate-limited
         """
-        # TODO: Implement proper rate limiting with time-based buckets
-        # For now, this is a placeholder that always returns True
-        # Production implementation would use a token bucket or sliding window
+        now = time.monotonic()
+        bucket = cls._rate_buckets.setdefault(operation, [])
+
+        # Prune timestamps outside the window (oldest-first — the list
+        # is naturally ordered by insertion time).
+        cutoff = now - cls._rate_window
+        while bucket and bucket[0] < cutoff:
+            bucket.pop(0)
+
+        if len(bucket) >= max_per_minute:
+            logger.warning(
+                "rate limit hit: %s — %d requests in window (limit %d)",
+                operation, len(bucket), max_per_minute,
+            )
+            return False
+
+        bucket.append(now)
         return True
+
+    @classmethod
+    def rate_limit_reset(cls, operation: Optional[str] = None) -> None:
+        """Clear rate-limit buckets. Pass an operation name to reset only
+        that bucket; pass None to reset all."""
+        if operation:
+            cls._rate_buckets.pop(operation, None)
+        else:
+            cls._rate_buckets.clear()
 
 
 class SecureConfig:
