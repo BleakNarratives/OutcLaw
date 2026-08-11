@@ -1,5 +1,50 @@
 # OutClaw — Development History & Contributors
 
+## Privacy purge — 2026-08-11 (client case identifiers removed from repo + GitHub)
+
+**Contributor:** Buffy / Freebuff coding agent  
+**Scope:** Remove all client name / case-number / case-file identifiers from the
+OutClaw repo working tree, full git history, and the GitHub remote.
+
+### Completed
+
+- **Case materials moved out of the codebase** into a mode-700 private folder
+  outside the repo (`~/mel_case_private_2026/`), with a manifest:
+  prep guide, case-analysis folders, and case-specific grievance filings that
+  were inside the project tree (these were untracked/ignored — never pushed).
+- **Working-tree scrub**: replaced client identifiers in `outclaw_misconduct.py`
+  (pattern-source line, Miranda check comment, RP-name detection strings),
+  `outclaw_scout_interface.py` (sample fixture), `HANDOFF.md` (context line),
+  `runbook.txt` (evidence-path examples), `outclaw_cli.py` / scout profile
+  examples, `outclaw_casework.py` comment, and a test fixture; renamed
+  `run_mel_case.sh` → `run_case_stack.sh` (git mv, references updated).
+- **History purge**: `git filter-repo --replace-text` rewrote every commit
+  (name → generic roles, case number → `24-001`, `mel/` → `case_data/`,
+  plus path rename). Backup bundle of the pre-purge repo saved to the private
+  folder. `refs/original` + reflogs expired; `gc --prune=now`;
+  `fsck` confirms 0 unreachable commits.
+- **GitHub purge**: force-pushed the rewritten history to the (renamed)
+  `BleakNarratives/OutcLaw` remote; verified the remote tree via `FETCH_HEAD`
+  contains zero client identifiers. Local origin URL updated to the renamed repo.
+
+### Verification
+
+- `git log --all -S'melissa' -S'Stewart'` and `-S'26-548'`: **zero commits** match.
+- Remote tree grep (name, case number, case-file paths): **clean**.
+- Full suite on the rewritten tree: **138 tests passed, 1 skipped, exit 0**.
+
+### Notes
+
+- GitHub's own object store may retain unreachable objects until its GC runs;
+  for a guaranteed cache purge (private repo), a GitHub Support request can
+  remove them. The pre-purge backup bundle is in the private folder if a full
+  restore is ever needed.
+- Old session logs inside the root-level quarantine zone reference the
+  matter; that zone is outside every git repo and already isolated pending
+  operator disposition (Q1.1).
+
+---
+
 ## extraction utility pass — 2026-08-11 (second entry, same branch)
 
 **Contributor:** Buffy / Freebuff coding agent
