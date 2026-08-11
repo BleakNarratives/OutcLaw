@@ -9,7 +9,7 @@ automating the detection of:
 3. Procedural Omissions (blank mandatory fields like Miranda, signatures).
 4. Self-Defense Corroboration (Defendant as 911 caller vs primary aggressor arrest).
 
-Derived from patterns found in State of Kansas v. Defendant (24-001).
+Derived from patterns found in a Kansas aggravated-battery self-defense case.
 """
 
 import re
@@ -58,7 +58,7 @@ class MisconductAuditor:
         
         for code, (pattern, detail) in patterns.items():
             if re.search(pattern, text, re.IGNORECASE | re.MULTILINE):
-                # Specific check for the blank Miranda field found in Defendant case
+                # Specific check for the blank Miranda field found in the source case
                 if "MIRANDA" in code and "DATE" in text and "TIME" in text:
                      # This logic checks if the fields following MIRANDA are empty
                      pass 
@@ -86,7 +86,7 @@ class MisconductAuditor:
                 severity="HIGH",
                 label="Self-Defense Inversion",
                 detail="The 911 caller (Reporting Party) was arrested as the primary aggressor without neutral witness corroboration.",
-                evidence_snippet="RP: the reporting party -> Status: Arrested",
+                evidence_snippet="RP: Reporting Party -> Status: Arrested",
                 remedy_suggestion="Highlight 'Primary Aggressor' analysis failure in preliminary hearing."
             ))
 

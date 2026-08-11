@@ -133,6 +133,29 @@ def _preflight(output_dir: Path, sources: list[Path], force: bool) -> None:
             )
 
 
+def _extraction_section(text: str) -> dict[str, Any]:
+    """Advisory extraction citation/statute extraction for the audit sidecar.
+
+    Best-effort and fail-closed in the right direction: any import or
+    runtime failure degrades to ``{"status": "unavailable"}`` and can never
+    block or alter a batch publication. Output is extraction evidence for
+    human review, not a legal validation.
+    """
+    try:
+        try:
+            from OutClaw.outclaw_extraction import extract_citation_metadata  # type: ignore
+        except ModuleNotFoundError:
+            from outclaw_extraction import extract_citation_metadata  # type: ignore
+    except Exception:
+        # Any import failure (ModuleNotFoundError, ImportError, name drift)
+        # degrades to unavailable — this section must never block a batch.
+        return {"status": "unavailable", "error": "extraction layer not importable"}
+    try:
+        return extract_citation_metadata(text)
+    except Exception as exc:
+        return {"status": "unavailable", "error": str(exc)}
+
+
 def _validate(source: Path, text: str) -> dict[str, Any]:
     """Use the actual validator's read-only evidence-consistency API."""
     validator = _load_validator()
@@ -142,6 +165,8 @@ def _validate(source: Path, text: str) -> dict[str, Any]:
         "validator": "outclaw_validator.validate_document",
         "metadata": metadata,
         "evidence_match": evidence_match,
+        # Advisory extraction metadata (vendored extraction layer); never gates.
+        "extraction": _extraction_section(text),
         # The legacy check is not the safety gate for generating pleadings.
         "safe_to_generate": False,
         "note": "Evidence match is not authorization to file or generate a pleading.",

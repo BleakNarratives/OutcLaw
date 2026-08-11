@@ -1350,6 +1350,70 @@ def cmd_transcript_search(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_record_audit(args: argparse.Namespace) -> int:
+    """Run the extraction extraction/ingestion layer over a case record.
+
+    Advisory only: citations/statutes per document, cross-document
+    cross-referencing, chronology, contradiction leads, and (when a
+    deposition transcript + Statement of Facts are supplied) SOF-vs-record
+    validation with page:line cites. Output is evidence for human review —
+    never a legal validation or a draft gate.
+    """
+    from outclaw_extraction import extraction_record_audit  # type: ignore
+
+    if not args.doc:
+        print(f"{R}✗ record-audit requires at least one --doc file{_R}", file=sys.stderr)
+        return 2
+    docs = {path.name: _read_text(path) for path in args.doc}
+    sof = _read_text(args.sof) if args.sof else None
+    deposition = _read_text(args.deposition) if args.deposition else None
+    if (args.sof is None) != (args.deposition is None):
+        # Statement-of-Facts validation needs BOTH inputs; warn instead of
+        # silently producing a report with no SOF section.
+        print(
+            f"{D}Note: Statement-of-Facts validation requires BOTH --sof and "
+            f"--deposition; validation was skipped.{_R}",
+            file=sys.stderr,
+        )
+
+    report = extraction_record_audit(
+        documents=docs,
+        statement_of_facts=sof,
+        deposition_transcript=deposition,
+        witness=args.witness,
+        case_name=args.case,
+        use_llm=args.llm,
+    )
+    if args.json:
+        print(json.dumps(report, indent=2, default=str))
+        return 0
+
+    print(f"\n{B}📋 RECORD AUDIT — extraction extraction layer (advisory only){_R}")
+    print(f"  Documents: {', '.join(report['documents_processed'])}")
+    for name, meta in report["per_document_extraction"].items():
+        print(
+            f"    {name}: {meta['total_citations']} citations, "
+            f"{meta['total_statutes']} statutes"
+        )
+    xref = report["cross_reference"]
+    print(f"  Shared authorities across docs: {len(xref['shared_cases'])}")
+    print(f"  Timeline events: {len(report['chronology']['timeline'])}")
+    print(
+        f"  Contradiction leads: {report['contradiction_leads']['total_contradictions']}"
+    )
+    sof_val = report["statement_of_facts_validation"]
+    if sof_val:
+        v = sof_val["validation"]
+        print(
+            f"  Statement of Facts: {v['total_assertions']} assertions, "
+            f"coverage {v['coverage']} — supported {len(v['supported'])}, "
+            f"unsupported {len(v['unsupported'])}, contradicted {len(v['contradicted'])}"
+        )
+    print(f"\n{D}Extraction output is evidence for human review — not a legal{_R}")
+    print(f"{D}validation and not authorization to file or generate a pleading.{_R}")
+    return 0
+
+
 def cmd_ingest(args: argparse.Namespace) -> int:
     """Scan a case folder into case_record.json."""
     from outclaw_casework import scan_case_dir  # type: ignore
@@ -1750,6 +1814,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--list", dest="list_only", action="store_true", help="List cases and exit"
     )
     p_demo.set_defaults(func=cmd_demo, list_only=False)
+
+    # ── record-audit (extraction extraction layer, advisory) ──
+    p_rec = sub.add_parser(
+        "record-audit",
+        help="extraction extraction layer over a case record: citations, cross-reference, chronology, SOF-vs-record validation (advisory)",
+    )
+    p_rec.add_argument(
+        "--doc", action="append", type=Path, default=[], help="Record document (.txt/.md); repeatable"
+    )
+    p_rec.add_argument("--sof", type=Path, help="Statement of Facts text file")
+    p_rec.add_argument("--deposition", type=Path, help="Deposition transcript text file")
+    p_rec.add_argument("--witness", help="Deponent name for --deposition")
+    p_rec.add_argument("--case", help="Case name for deposition citations")
+    p_rec.add_argument(
+        "--llm", action="store_true",
+        help="Enable model-backed semantic checks (free cloud cascade; requires keys)",
+    )
+    p_rec.add_argument("--json", action="store_true", help="Output raw JSON report")
+    p_rec.set_defaults(func=cmd_record_audit)
 
     # ── case ──
     # No implicit profile: OutClaw stays general; the use case is named

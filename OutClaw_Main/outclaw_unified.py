@@ -815,6 +815,27 @@ def audit_text(
             "error": str(exc),
         }
 
+    # Stage 3.25b: extraction extraction layer (advisory only). Feeds the vendored
+    # citation/statute regex extraction into the report metadata. This is the
+    # extraction/ingestion half of the strategic split — the semantic
+    # classifier above remains the source of truth for fraud findings, and
+    # this stage never changes safe_to_draft.
+    try:
+        from OutClaw.outclaw_extraction import extract_citation_metadata  # type: ignore
+    except ModuleNotFoundError as exc:
+        # Mirror the namespace fallback used for outclaw_record_review.
+        if exc.name != "OutClaw":
+            raise
+        from outclaw_extraction import extract_citation_metadata  # type: ignore
+
+    try:
+        extraction_metadata["extraction"] = extract_citation_metadata(text_norm)
+    except Exception as exc:
+        # Advisory integration failure must not make the core audit unusable.
+        extraction_metadata.setdefault("extraction", {}).update(
+            {"status": "unavailable", "error": str(exc)}
+        )
+
     # Stage 3.5: LLM auto-escalation (post-processing pass).
     escalation_stats: dict[str, int] = {}
     if auto_escalate:

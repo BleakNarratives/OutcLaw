@@ -20,6 +20,21 @@ This is the active work list after commit `3309229` (`feat: publish case review 
 - [x] Validation completed for the latest build: 113 tests passed, 1 skipped, 11/11 regression cases, CLI smoke passed.
 - [x] Latest build was committed locally; it was not pushed to GitHub.
 
+## extraction integration — DONE (2026-08-11, branch agent/extraction-integration-20260811)
+
+- [x] Vendored the vendored extraction layer core modules into `extraction/` (MIT, self-contained; provenance in `extraction/README.md`)
+- [x] Applied one documented regex fix: reporter class widened to accept digits (F.3d-style citations now match)
+- [x] Added `outclaw_extraction.py` integration layer (citation extraction, deposition ingest + SOF validation, cross-reference, chronology, contradiction leads, semantic citation check)
+- [x] Wired advisory `extraction_metadata["extraction"]` into `outclaw_unified.audit_text` — does not touch `safe_to_draft`
+- [x] Added `outclaw_tests/test_extraction_integration.py` (25 tests); full suite 138 passed, 1 skipped
+- [x] Utility surfaces: `record-audit` CLI subcommand (outclaw_cli.py) + advisory `extraction` in compile_case_docs audit sidecars (fail-closed)
+- [x] Uninstalled `the vendored extraction layer` from the system — vendored `extraction/` is the only copy
+
+## Open extraction follow-ups (from outclaw_round_3.md)
+
+- [ ] Enable/validate the model-backed semantic path (`semantic_citation_check` uses the free-cloud cascade when configured; defaults to lexical)
+- [ ] Deepen `detect_factual_contradictions` beyond shallow did/did-not patterns
+
 ## Priority 1 — stabilize dashboard ingestion
 
 - [ ] Reproduce the known multi-file `SecurityViolation: Path contains invalid characters` failure.

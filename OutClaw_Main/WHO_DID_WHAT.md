@@ -1,5 +1,94 @@
 # OutClaw — Development History & Contributors
 
+## extraction utility pass — 2026-08-11 (second entry, same branch)
+
+**Contributor:** Buffy / Freebuff coding agent
+
+### Completed
+
+- **Uninstalled `the vendored extraction layer` from the system** (`pip uninstall`). The
+  vendored `extraction/` package is now the only copy; the 20-test extraction suite
+  still passes after uninstall (proves the vendoring is self-contained).
+- **`record-audit` CLI subcommand** (`outclaw_cli.py`): one command to run
+  the composed extraction extraction layer over a case — `--doc` (repeatable),
+  `--sof`, `--deposition`, `--witness`, `--case`, `--llm`, `--json`.
+  Advisory-only output; exit 2 when no documents are supplied.
+- **Advisory extraction section in batch-compiler sidecars**
+  (`compile_case_docs.py`): each audit sidecar now carries
+  `extraction` (citations/statutes per source). Fail-closed in the
+  right direction — any import/runtime failure degrades to
+  `{"status": "unavailable"}` and can never block or alter a batch
+  (verified by an import-failure test that fakes an ImportError).
+- **CLI guardrail:** `record-audit` warns when only one of `--sof` /
+  `--deposition` is given (SOF validation needs both), instead of silently
+  producing a report with no SOF section.
+
+### Verification
+
+- Full suite: **138 tests passed, 1 skipped, exit 0** (was 133 + 1 skipped).
+- New: CLI `record-audit` tests (success, missing-doc exit 2, partial-SOF
+  warning), compile sidecar enrichment test, and extraction-import-failure
+  fail-closed test.
+- Manual CLI smoke: record-audit over a sample record returned citations,
+  timeline event, and SOF-vs-record validation (1 supported / 1 unsupported)
+  — real output, advisory labels intact.
+
+---
+
+## extraction extraction-layer integration — 2026-08-11
+
+**Contributor:** Buffy / Freebuff coding agent  
+**Branch:** `agent/extraction-integration-20260811`  
+**Source of truth for scope:** root `outclaw_round_3.md` (extraction Legal Integration section) + `HANDOFF.md`.
+
+### Completed
+
+- **Vendored extraction core modules** into `extraction/` (self-contained, MIT):
+  `text_extraction_core.py` (citation/statute regex), `deposition_tools.py`
+  (deposition ingest/search/SOF validation), `extraction_validation.py`
+  (record facts, chronology, cross-reference, citation accuracy). Provenance
+  documented in `extraction/README.md`.
+- **Applied one documented functional fix** to the vendored files: the
+  reporter character class `[A-Za-z\.\s]` excluded digits so `F.3d`-style
+  citations never matched — widened to `[A-Za-z0-9\.\s]` at 5 regex sites
+  (validate_citation_accuracy, extract_judge_patterns,
+  cross_reference_citations).
+- **`outclaw_extraction.py` integration layer** wraps the vendored APIs into
+  OutClaw-shaped advisory outputs: `extract_citation_metadata`,
+  `ingest_deposition_text`, `search_deposition_query`,
+  `validate_facts_against_record`, `cross_reference_documents`,
+  `build_timeline`, `detect_contradictions`, `record_facts`,
+  `judge_patterns`, `circuit_law`, `validate_citation_accuracy` (WRAP AND
+  EXTEND), `semantic_citation_check` (model-backed pass over the bag-of-words
+  baseline), and the composed `extraction_record_audit`.
+- **Wired into the unified audit**: `outclaw_unified.audit_text` Stage 3.25b
+  now surfaces `extraction_metadata["extraction"]` — advisory only, never
+  changes `safe_to_draft` or the semantic classifier.
+- **Tests:** `outclaw_tests/test_extraction_integration.py` (20 tests) —
+  package loading, citation extraction, deposition ingest + SOF validation,
+  cross-reference, chronology, contradiction leads, semantic check,
+  composed audit, unified wiring, and deposition-store scoping.
+
+### Verification
+
+- Full suite: **133 tests passed, 1 skipped, exit 0** (was 113 + 1 skipped).
+- New extraction integration tests: 20/20 pass.
+- Python compilation passes; no change to the DRAFT block or pleading
+  generation.
+
+### Remaining (from round 3, not done)
+
+- `detect_factual_contradictions` semantics are still the shallow
+  did/did-not patterns — flagged as leads, not proof. Deeper contradiction
+  detection is a follow-up.
+- The model-backed semantic comparison (`semantic_citation_check`) is wired
+  to the existing free-cloud cascade and defaults to the lexical fallback;
+  no cascade API keys were configured this session.
+- g-pry-t handoff priorities (dashboard multi-file ingestion
+  `SecurityViolation`, aggregate findings) remain open and are unchanged.
+
+---
+
 ## Autonomous maintenance pass — 2026-08-08
 
 **Contributor:** Buffy / Freebuff coding agent  

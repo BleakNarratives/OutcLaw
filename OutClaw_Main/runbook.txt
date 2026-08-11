@@ -101,14 +101,13 @@ Privacy and evidence boundary
 -----------------------------
 - Never commit original arrest reports, photographs, identifiers, credentials,
   or unredacted court records.
-- Keep raw Mel evidence outside normal development and CI workflows.
+- Keep raw case evidence outside normal development and CI workflows.
 - Use the redacted working copy only after a human privacy review; remaining case
   numbers, dates, locations, and offense details may still be identifying.
 - Verify Git behavior before staging evidence:
 
-      git check-ignore -v OutClaw_Main/case_data/arrest_report_24-001.txt
-      git check-ignore -v OutClaw/case_data/IMG_20260731_161331236.jpg
-      git check-ignore OutClaw_Main/case_data/arrest_report_24-001.redacted.txt
+      git check-ignore -v case_data/arrest_report.txt
+      git check-ignore -v case_data/evidence_photo.jpg
 
 - Do not paste PII into issue trackers, pull requests, chat logs, or external APIs.
 See SECURITY.md for reporting and repository handling rules.

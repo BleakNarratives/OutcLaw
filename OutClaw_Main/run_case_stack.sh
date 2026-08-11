@@ -10,8 +10,8 @@
 # case (e.g. ./run_case_stack.sh demo_oklahoma/case_context.json).
 #
 # Usage:
-#   ./run_case_stack.sh                       # full stack, default profile
-#   ./run_case_stack.sh <profile.json>        # different case profile
+#   ./run_case_stack.sh                     # full stack, default profile
+#   ./run_case_stack.sh <profile.json>      # different case profile
 #   ./run_case_stack.sh <profile.json> scout-only   # case law only (no names needed)
 #
 # Outputs land in <profile-dir>/OutClaw_Research and OutClaw_Intelligence.
