@@ -512,6 +512,7 @@ class UnifiedReport:
     findings: list[Finding] = field(default_factory=list)
     candidates: list[dict[str, Any]] = field(default_factory=list)
     summary: dict[str, Any] = field(default_factory=dict)
+    extraction_metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -530,6 +531,7 @@ class UnifiedReport:
             ],
             "candidates": self.candidates,
             "summary": self.summary,
+            "extraction_metadata": self.extraction_metadata,
         }
 
     def safe_to_draft(self) -> bool:
@@ -790,6 +792,29 @@ def audit_text(
     # Stage 3: arch pipeline (structural validation).
     arch_report = arch_mod.run_pipeline(text_norm)
 
+    # Stage 3.25: optional native extraction metadata. This is deliberately
+    # advisory: the OutClaw classifier above remains the source of truth for
+    # fraud findings, and extraction output never changes safe_to_draft.
+    extraction_metadata: dict[str, Any]
+    try:
+        from OutClaw.outclaw_record_review import extract_text_metadata  # type: ignore
+    except ModuleNotFoundError as exc:
+        # Direct execution from OutClaw_Main does not put the compatibility
+        # namespace's parent on sys.path. Only fall back when the namespace
+        # itself is unavailable; do not hide an internal dependency failure.
+        if exc.name != "OutClaw":
+            raise
+        from outclaw_record_review import extract_text_metadata  # type: ignore
+
+    try:
+        extraction_metadata = extract_text_metadata(text_norm)
+    except Exception as exc:
+        # Optional integration failure must not make the core audit unusable.
+        extraction_metadata = {
+            "status": "unavailable",
+            "error": str(exc),
+        }
+
     # Stage 3.5: LLM auto-escalation (post-processing pass).
     escalation_stats: dict[str, int] = {}
     if auto_escalate:
@@ -824,6 +849,7 @@ def audit_text(
         findings=findings,
         candidates=arch_report.get("citations", []),
         summary=summary,
+        extraction_metadata=extraction_metadata,
     )
 
 

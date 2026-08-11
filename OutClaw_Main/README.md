@@ -7,7 +7,7 @@ OutClaw is a tool for auditing legal documents for citation fraud and procedural
 1.  **Install Docker**: If you don't have it, [get Docker here](https://docs.docker.com/get-docker/).
 2.  **Build OutClaw**: Run this command in the project folder:
     `docker build -t outclaw .`
-3.  **Run It**: Run this command:
+3.  **Run It**: Run this command in the project folder:
     `docker run -p 5000:5000 outclaw`
 4.  **Open in Browser**: Visit `http://localhost:5000`
 
@@ -33,8 +33,20 @@ python3 compile_case_docs.py \
 
 Outputs are **human-review evidence, not filed pleadings**. An evidence match is not legal validation or authorization to file. Missing evidence and per-file errors produce a nonzero CLI status. The canonical tree currently has no `outclaw_builder.py`; the permanent DRAFT safety block remains active.
 
+## Round 3 extraction layer
+
+`outclaw_record_review.py` adds a native, standard-library-only extraction
+layer for broad citation/statute/date metadata, multi-document chronology,
+potential contradiction leads, citation overlap, and an explicit process-local
+deposition search store. Unified audit JSON exposes this as advisory
+`extraction_metadata`; it never changes OutClaw's semantic fraud findings or
+DRAFT gate. Source material is not persisted by this layer, and deposition
+content should be cleared after review. All leads require human verification
+against the official record.
+
 Run focused checks with:
 
 ```bash
+python3 -m unittest discover -s outclaw_tests -p 'test_record_review.py' -v
 python3 -m unittest discover -s outclaw_tests -p 'test_compile_case_docs.py' -v
 ```
