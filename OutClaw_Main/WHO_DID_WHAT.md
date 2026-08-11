@@ -29,7 +29,8 @@ OutClaw repo working tree, full git history, and the GitHub remote.
 
 ### Verification
 
-- `git log --all -S'melissa' -S'Stewart'` and `-S'26-548'`: **zero commits** match.
+- Pickaxe search of the full history for the former client name and case
+  number: **zero commits** match.
 - Remote tree grep (name, case number, case-file paths): **clean**.
 - Full suite on the rewritten tree: **138 tests passed, 1 skipped, exit 0**.
 
