@@ -1,11 +1,10 @@
-# Vendored into OutClaw from the vendored extraction layer 1.0.0 (MIT License)
-# Source: https://github.com/daltonjsawyer-png/extraction
+# Vendored into OutClaw from the vendored extraction layer (MIT License)
 # Copied verbatim into the OutClaw tree (2026-08-11) so the
 # extraction/ingestion layer is self-contained and portable.
-# See extraction/README.md for provenance and OutClaw wrap points.
+# See extraction_kit/README.md for provenance and OutClaw wrap points.
 
 """
-Extraction and Validation Tools for extraction MCP Server.
+Extraction and Validation Tools for extraction layer.
 
 Tools that extract structured data from legal documents for Claude Desktop
 to use when writing briefs and legal analysis.
@@ -627,7 +626,7 @@ def validate_citation_accuracy(
     # Matches: "proposition text. Case Name, Volume Reporter Page (Year)."
     # OUTCLAW FIX (2026-08-11): reporter class was [A-Za-z\.\s] which cannot
     # match digit-bearing reporters (F.3d, F.2d, F. Supp. 2d) -- widened to
-    # [A-Za-z0-9\.\s]. See extraction/README.md.
+    # [A-Za-z0-9\.\s]. See extraction_kit/README.md.
     citation_patterns = [
         # Standard citation with proposition before
         r'([^.]+\.)\s*([A-Z][A-Za-z\'\-\s]+(?:v\.|vs\.)\s+[A-Z][A-Za-z\'\-\s,]+),?\s*(\d+)\s+([A-Za-z0-9\.\s]+)\s+(\d+)(?:,\s*(\d+))?\s*\(([^)]+)\)',

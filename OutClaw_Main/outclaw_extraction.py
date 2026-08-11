@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""outclaw_extraction.py — OutClaw integration over the vendored ``extraction`` package.
+"""outclaw_extraction.py — OutClaw integration over the vendored ``extraction_kit`` package.
 
 Strategic split (root ``outclaw_round_3.md``):
-  * extraction owns the extraction / ingestion layer (vendored in ``./extraction``).
+  * extraction owns the extraction / ingestion layer (vendored in ``./extraction_kit``).
   * OutClaw's differentiation is semantic fraud scoring on top of it.
   * This module wraps the vendored APIs into OutClaw-shaped, JSON-safe
     outputs so the dashboard / orchestrator can consume them.
@@ -23,10 +23,11 @@ WRAP AND EXTEND (per round 3):
 
 from __future__ import annotations
 
+import re
 from typing import Any, Mapping, Optional
 
 # The vendored extraction/ingestion layer (self-contained, MIT).
-from extraction import (
+from extraction_kit import (
     analyze_text_comprehensive,
     build_chronology,
     clear_deposition_store,
@@ -65,7 +66,7 @@ Respond with ONLY this JSON (no other text):
 
 
 def _lexical_support_score(proposition: str, holding: str) -> float:
-    """Bag-of-words overlap mirroring extraction's validate_citation_accuracy.
+    """Bag-of-words overlap mirroring the extraction layer's validate_citation_accuracy.
 
     Returns a score in [0, 1] over alpha tokens of length >= 4. This is the
     baseline that the semantic (model-backed) pass replaces when enabled.
@@ -77,6 +78,26 @@ def _lexical_support_score(proposition: str, holding: str) -> float:
     if not prop or not hold:
         return 0.0
     return len(prop & hold) / max(len(prop), len(hold))
+
+
+def semantic_cascade_status() -> dict[str, Any]:
+    """Report whether the model-backed cascade is configured/enabled.
+
+    No network calls — inspects the cascade config the same way the
+    semantic path does, so an operator can see why a run fell back to
+    lexical scoring before they spend time on a report.
+    """
+    try:
+        from OutClaw.outclaw_model_cascade import get_cascade  # type: ignore
+
+        cascade = get_cascade()
+        return {
+            **_ADVISORY,
+            "backend": "cascade",
+            "enabled": bool(cascade.enabled),
+        }
+    except Exception:
+        return {**_ADVISORY, "backend": "cascade", "enabled": False}
 
 
 def _consult_semantic_model(proposition: str, holding: str) -> Optional[dict[str, Any]]:
@@ -116,7 +137,7 @@ def semantic_citation_check(
 ) -> dict[str, Any]:
     """Check whether a proposition is supported by a holding.
 
-    Extends extraction's bag-of-words matching with a model-backed semantic
+    Extends the extraction layer's bag-of-words matching with a model-backed semantic
     comparison when ``use_llm`` is enabled and the cascade is configured.
 
     Returns (advisory)::
@@ -147,7 +168,9 @@ def semantic_citation_check(
                 reasoning = model.get("reasoning")
                 # bool is an int subclass; reject it so `"confidence": true`
                 # cannot coerce to 1.0.
-                if type(confidence) is int or isinstance(confidence, float):
+                if isinstance(confidence, bool):
+                    confidence = None
+                elif type(confidence) is int or isinstance(confidence, float):
                     confidence = round(float(confidence), 3)
 
     return {
@@ -277,13 +300,339 @@ def build_timeline(documents: Mapping[str, str]) -> dict[str, Any]:
     return build_chronology(dict(documents))
 
 
-def detect_contradictions(documents: Mapping[str, str]) -> dict[str, Any]:
-    """Cross-document factual contradiction scan (omission + did/did-not).
+# ---------------------------------------------------------------------------
+# Deep factual-contradiction scan (WRAP AND EXTEND, round 3)
+# ---------------------------------------------------------------------------
 
-    NOTE (round 3): the vendored contradiction patterns are shallow. Treat
-    every hit as a lead for human review, not proof of contradiction.
+# Content-word filters used to anchor the same "event" across documents.
+_DEEP_STOP = frozenset(
+    """the a an at on in of to and or for with was were had has have he she it
+    they his her their that this from by as be been is are did do does not no
+    there about around approximately roughly said stated according per then
+    when where what who whom which""".split()
+)
+_APPROX_WORDS = {"about", "around", "approximately", "roughly", "approx", "circa"}
+
+# Word-boundary negation patterns (never "never" inside "nevertheless").
+_NEGATION_PATTERNS = (
+    r"\bdid not\b", r"\bdidn't\b", r"\bwas not\b", r"\bwasn't\b",
+    r"\bwere not\b", r"\bweren't\b", r"\bnever\b", r"\bno evidence\b",
+    r"\bunable to\b", r"\brefused to\b", r"\bdenied that\b",
+)
+_NEGATION_RE = re.compile("|".join(_NEGATION_PATTERNS), re.IGNORECASE)
+
+_DATE_RE = re.compile(
+    r"\b(?:January|February|March|April|May|June|July|August|September|"
+    r"October|November|December)\s+\d{1,2},?\s+\d{4}\b|"
+    r"\b\d{1,2}/\d{1,2}/\d{4}\b"
+)
+_TIME_RE = re.compile(r"\b\d{1,2}:\d{2}\s*(?:a\.?m\.?|p\.?m\.?)?\b")
+_AMOUNT_RE = re.compile(
+    r"\$\s?\d[\d,]*(?:\.\d+)?|\b\d[\d,]*(?:\.\d+)?\s*"
+    r"(?:years?|months?|weeks?|days?|hours?|miles?|feet?|pounds?|"
+    r"dollars?|percent|%)\b"
+)
+_ENTITY_RE = re.compile(r"\b(?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\b")
+
+# Capitalized words that are never entities (sentence starters, months,
+# generic nouns) — keeps shared-entity anchoring honest.
+_ENTITY_JUNK = frozenset(
+    """The On At In A An It He She They We This That Court However But
+    January February March April May June July August September October
+    November December Incident Report Officer Detective State""".split()
+)
+_MONTHS = {
+    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5,
+    "june": 6, "july": 7, "august": 8, "september": 9, "october": 10,
+    "november": 11, "december": 12,
+}
+_AMOUNT_UNITS = {
+    "year": "years", "years": "years", "month": "months", "months": "months",
+    "week": "weeks", "weeks": "weeks", "day": "days", "days": "days",
+    "hour": "hours", "hours": "hours", "mile": "miles", "miles": "miles",
+    "foot": "feet", "feet": "feet", "pound": "pounds", "pounds": "pounds",
+    "dollar": "dollars", "dollars": "dollars", "percent": "percent", "%": "percent",
+}
+
+# Amount-context nouns: when two sentences name the same monetary subject
+# ("the settlement", "the payment", "the award"), the amounts are comparable
+# even without a capitalized proper-noun entity.
+_AMOUNT_CONTEXT_WORDS = frozenset(
+    """settlement payment award damages fee fine bail salary wage cost price
+    bond judgment restitution compensation penalty expense amount total sum
+    """.split()
+)
+
+# Common deposition/record action verbs (base + inflected). Time/amount/date
+# conflicts must share one of these so "arrived at 8" vs "left at 9" (same
+# person, different events) are not reported as a contradiction.
+_VERB_WORDS = frozenset(
+    """arrive arrived arrives leave left leaves depart departed departs
+    return returned returns attend attended attends testify testified
+    testifies state stated states admit admitted admits receive received
+    receives pay paid pays send sent sends call called calls file filed
+    files enter entered enters exit exited exits start started starts end
+    ended ends begin began begun occur occurred occurs happen happened
+    happens see saw seen hear heard hears sign signed signs visit visited
+    visits purchase purchased purchases sell sold sells meet met meets
+    appear appeared appears remain remained remains stay stayed stays
+    walk walked walks run ran runs drive drove drives show showed shows
+    bring brought brings take took takes give gave gives make made makes
+    """.split()
+)
+
+
+def _deep_sentences(text: str) -> list[str]:
+    """Split text into sentences on sentence boundaries."""
+    parts = re.split(r"(?<=[.!?])\s+", text)
+    return [p.strip() for p in parts if len(p.strip()) >= 15]
+
+
+def _normalize_date(raw: str) -> Optional[str]:
+    """Canonicalize a date to YYYY-MM-DD so equivalent formats compare equal."""
+    m = re.search(
+        r"(January|February|March|April|May|June|July|August|September|"
+        r"October|November|December)\s+(\d{1,2}),?\s+(\d{4})",
+        raw,
+        re.IGNORECASE,
+    )
+    if m:
+        month_name, day, year = m.group(1).lower(), int(m.group(2)), int(m.group(3))
+        return f"{year:04d}-{_MONTHS[month_name]:02d}-{day:02d}"
+    m = re.search(r"(\d{1,2})/(\d{1,2})/(\d{4})", raw)
+    if m:
+        month, day, year = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        return f"{year:04d}-{month:02d}-{day:02d}"
+    return raw
+
+
+def _normalize_time(raw: str) -> Optional[str]:
+    """Canonicalize a clock time to HH:MM (24h) so 8:00 a.m. == 8:00 am."""
+    m = re.search(r"(\d{1,2}):(\d{2})\s*(a\.?m\.?|p\.?m\.?)?", raw, re.IGNORECASE)
+    if not m:
+        return raw
+    hour, minute = int(m.group(1)), int(m.group(2))
+    meridiem = (m.group(3) or "").lower().replace(".", "")
+    if meridiem == "pm" and hour < 12:
+        hour += 12
+    elif meridiem == "am" and hour == 12:
+        hour = 0
+    return f"{hour:02d}:{minute:02d}"
+
+
+def _normalize_amount(raw: str) -> Optional[str]:
+    """Canonicalize an amount to 'VALUE|UNIT' so $5,000 == $5000.00."""
+    m = re.search(r"\$\s?([\d,]+(?:\.\d+)?)", raw)
+    if m:
+        value = m.group(1).replace(",", "")
+        return f"{float(value):.2f}|currency"
+    m = re.search(r"([\d,]+(?:\.\d+)?)\s*(\w+|%)", raw)
+    if m:
+        value = m.group(1).replace(",", "")
+        unit = _AMOUNT_UNITS.get(m.group(2).lower(), m.group(2).lower())
+        return f"{float(value):.2f}|{unit}"
+    return raw
+
+
+def _deep_fact_vector(sentence: str) -> dict[str, Any]:
+    """Extract an event-anchor vector from one sentence (deterministic).
+
+    Returns entities (capitalized runs, junk filtered), canonicalized
+    date/time/amount, the negation flag, and the content-word set used to
+    anchor "same event" comparisons across documents.
     """
-    return detect_factual_contradictions(dict(documents))
+    raw_entities = re.findall(_ENTITY_RE, sentence)
+    entities = sorted({
+        e for e in raw_entities
+        if e.split()[0] not in _ENTITY_JUNK and e.lower() not in _DEEP_STOP
+    })
+    date_m = re.search(_DATE_RE, sentence)
+    time_m = re.search(_TIME_RE, sentence)
+    amount_m = re.search(_AMOUNT_RE, sentence)
+    lowered = sentence.lower()
+    approx = any(w in lowered for w in _APPROX_WORDS)
+    content = {
+        w for w in re.findall(r"[a-z]{4,}", lowered) if w not in _DEEP_STOP
+    }
+    return {
+        "sentence": sentence,
+        "entities": entities,
+        "date": _normalize_date(date_m.group(0)) if date_m else None,
+        "time": _normalize_time(time_m.group(0)) if time_m else None,
+        "amount": _normalize_amount(amount_m.group(0)) if amount_m else None,
+        "approximate": approx,
+        "negated": bool(_NEGATION_RE.search(lowered)),
+        "content": content,
+        "action": content & _VERB_WORDS,
+        "amount_context": content & _AMOUNT_CONTEXT_WORDS,
+    }
+
+
+def _same_event(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    """Anchor two facts to the same event: shared entity AND either a shared
+    date or >=2 shared content words (excluding the shared entity names)."""
+    shared_ents = set(a["entities"]) & set(b["entities"])
+    if not shared_ents:
+        # Amount-bearing sentences may name the same monetary subject with
+        # no proper noun ("the settlement was $5,000") — a shared
+        # amount-context noun is a valid anchor on its own.
+        if a["amount"] and b["amount"]:
+            return bool(a["amount_context"] & b["amount_context"])
+        return False
+    shared_content = a["content"] & b["content"]
+    if a["date"] and b["date"]:
+        return a["date"] == b["date"] or bool(shared_content)
+    # Amount-bearing sentences often share only a context noun ("settlement",
+    # "payment") — one shared word plus a shared entity is enough to anchor.
+    if a["amount"] and b["amount"] and shared_content:
+        return True
+    return len(shared_content) >= 2
+
+
+def _shared_action(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    """Require a shared action verb so 'arrived at 8' vs 'left at 9'
+    (same person, different events) are not reported as a contradiction."""
+    return bool(a["action"] & b["action"])
+
+
+def _shared_word(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    """Looser anchor for amount conflicts: any shared content word (the
+    context noun like "settlement"/"payment") is sufficient."""
+    return bool(a["content"] & b["content"])
+
+
+def deep_contradiction_scan(documents: Mapping[str, str]) -> dict[str, Any]:
+    """Deterministic deep factual-contradiction scan (WRAP AND EXTEND).
+
+    Complements the vendored did/did-not scan with concrete, reviewable
+    conflict leads:
+      * date conflicts  — same anchored event, different dates
+      * time conflicts  — same anchored event, different times
+      * amount conflicts — same anchored event, different amounts
+      * negation conflicts — same anchored event, one side negated
+
+    Values are canonicalized before comparison (8:00 a.m. == 8:00 am,
+    $5,000 == $5,000.00, January 15, 2024 == 1/15/2024), negation is
+    word-boundary matched ("never" does not match "nevertheless"), and
+    time/amount/date leads require a shared action word so unrelated
+    events involving the same person are not conflated. Approximate values
+    ("around 8:00 a.m.") never conflict with exact ones. Output is
+    strictly advisory; every lead is a pointer for a human to check, never
+    proof of contradiction.
+    """
+    docs = dict(documents)
+    names = list(docs.keys())
+    leads: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+
+    for i, name_a in enumerate(names):
+        facts_a = [_deep_fact_vector(s) for s in _deep_sentences(docs[name_a])]
+        for name_b in names[i + 1:]:
+            facts_b = [_deep_fact_vector(s) for s in _deep_sentences(docs[name_b])]
+            for fa in facts_a:
+                for fb in facts_b:
+                    if not _same_event(fa, fb):
+                        continue
+                    shared_ents = sorted(set(fa["entities"]) & set(fb["entities"]))
+                    # Negation conflict: same event, opposite polarity.
+                    if fa["negated"] != fb["negated"]:
+                        key = ("negation", fa["sentence"], fb["sentence"])
+                        if key not in seen:
+                            seen.add(key)
+                            leads.append({
+                                "type": "negation_conflict",
+                                "shared_entities": shared_ents[:5],
+                                "source_a": name_a,
+                                "fact_a": fa["sentence"][:300],
+                                "source_b": name_b,
+                                "fact_b": fb["sentence"][:300],
+                                "note": "one document asserts the fact, the other negates it",
+                            })
+                    # Date conflict: same event, different dates.
+                    if (
+                        fa["date"] and fb["date"] and fa["date"] != fb["date"]
+                        and _shared_action(fa, fb)
+                    ):
+                        key = ("date", fa["date"], fb["date"])
+                        if key not in seen:
+                            seen.add(key)
+                            leads.append({
+                                "type": "date_conflict",
+                                "shared_entities": shared_ents[:5],
+                                "source_a": name_a,
+                                "fact_a": fa["sentence"][:300],
+                                "source_b": name_b,
+                                "fact_b": fb["sentence"][:300],
+                                "date_a": fa["date"],
+                                "date_b": fb["date"],
+                                "note": "the same anchored event is dated differently",
+                            })
+                    # Time conflict: same event, different exact times.
+                    if (
+                        fa["time"] and fb["time"] and fa["time"] != fb["time"]
+                        and not fa["approximate"] and not fb["approximate"]
+                        and _shared_action(fa, fb)
+                    ):
+                        key = ("time", fa["time"], fb["time"])
+                        if key not in seen:
+                            seen.add(key)
+                            leads.append({
+                                "type": "time_conflict",
+                                "shared_entities": shared_ents[:5],
+                                "source_a": name_a,
+                                "fact_a": fa["sentence"][:300],
+                                "source_b": name_b,
+                                "fact_b": fb["sentence"][:300],
+                                "time_a": fa["time"],
+                                "time_b": fb["time"],
+                                "note": "the same anchored event is timed differently",
+                            })
+                    # Amount conflict: same event, different amounts. Uses
+                    # the looser shared-word anchor (context nouns like
+                    # "settlement" carry no verb, so verb-anchoring would
+                    # miss them).
+                    if (
+                        fa["amount"] and fb["amount"] and fa["amount"] != fb["amount"]
+                        and not fa["approximate"] and not fb["approximate"]
+                        and _shared_word(fa, fb)
+                    ):
+                        key = ("amount", fa["amount"], fb["amount"])
+                        if key not in seen:
+                            seen.add(key)
+                            leads.append({
+                                "type": "amount_conflict",
+                                "shared_entities": shared_ents[:5],
+                                "source_a": name_a,
+                                "fact_a": fa["sentence"][:300],
+                                "source_b": name_b,
+                                "fact_b": fb["sentence"][:300],
+                                "amount_a": fa["amount"],
+                                "amount_b": fb["amount"],
+                                "note": "the same anchored event reports different amounts",
+                            })
+
+    order = {"negation_conflict": 0, "date_conflict": 1, "time_conflict": 2, "amount_conflict": 3}
+    leads.sort(key=lambda lead: (order.get(lead["type"], 9), lead["source_a"], lead["source_b"]))
+    return {
+        **_ADVISORY,
+        "scan": "outclaw-deep-factual-v1",
+        "documents_analyzed": names,
+        "total_leads": len(leads),
+        "leads": leads[:50],
+    }
+
+
+def detect_contradictions(documents: Mapping[str, str]) -> dict[str, Any]:
+    """Cross-document factual contradiction scan.
+
+    Composes the vendored shallow scan (omission + did/did-not) with the
+    round-3 deep scan (date/time/amount/negation leads). Every hit is a
+    lead for human review, never proof of contradiction.
+    """
+    shallow = detect_factual_contradictions(dict(documents))
+    deep = deep_contradiction_scan(documents)
+    shallow["deep_scan"] = deep
+    return shallow
 
 
 def record_facts(record_text: str, document_name: str = "Record") -> dict[str, Any]:
@@ -352,7 +701,7 @@ def extraction_record_audit(
     case_name: Optional[str] = None,
     use_llm: bool = False,
 ) -> dict[str, Any]:
-    """Run the extraction extraction/ingestion layer over a case record.
+    """Run the extraction/ingestion layer over a case record.
 
     Composes, in order:
       1. Per-document citation/statute extraction.
@@ -370,7 +719,7 @@ def extraction_record_audit(
     docs = dict(documents)
     report: dict[str, Any] = {
         **_ADVISORY,
-        "engine": "the vendored extraction layer 1.0.0 (vendored) + outclaw_extraction",
+        "engine": "the vendored extraction layer (vendored) + outclaw_extraction",
         "documents_processed": list(docs.keys()),
         "per_document_extraction": {
             name: extract_citation_metadata(text) for name, text in docs.items()
@@ -379,7 +728,10 @@ def extraction_record_audit(
         "chronology": build_timeline(docs),
         "contradiction_leads": detect_contradictions(docs),
         "statement_of_facts_validation": None,
-        "semantic_checks": {"use_llm": use_llm},
+        "semantic_checks": {
+            "use_llm": use_llm,
+            "cascade_status": semantic_cascade_status(),
+        },
     }
 
     if statement_of_facts and deposition_transcript:

@@ -53,10 +53,10 @@ OutClaw repo working tree, full git history, and the GitHub remote.
 ### Completed
 
 - **Uninstalled `the vendored extraction layer` from the system** (`pip uninstall`). The
-  vendored `extraction/` package is now the only copy; the 20-test extraction suite
+  vendored `extraction_kit/` package is now the only copy; the 20-test extraction suite
   still passes after uninstall (proves the vendoring is self-contained).
 - **`record-audit` CLI subcommand** (`outclaw_cli.py`): one command to run
-  the composed extraction extraction layer over a case — `--doc` (repeatable),
+  the composed extraction layer over a case — `--doc` (repeatable),
   `--sof`, `--deposition`, `--witness`, `--case`, `--llm`, `--json`.
   Advisory-only output; exit 2 when no documents are supplied.
 - **Advisory extraction section in batch-compiler sidecars**
@@ -81,7 +81,7 @@ OutClaw repo working tree, full git history, and the GitHub remote.
 
 ---
 
-## extraction extraction-layer integration — 2026-08-11
+## extraction-layer integration — 2026-08-11
 
 **Contributor:** Buffy / Freebuff coding agent  
 **Branch:** `agent/extraction-integration-20260811`  
@@ -89,11 +89,11 @@ OutClaw repo working tree, full git history, and the GitHub remote.
 
 ### Completed
 
-- **Vendored extraction core modules** into `extraction/` (self-contained, MIT):
+- **Vendored extraction core modules** into `extraction_kit/` (self-contained, MIT):
   `text_extraction_core.py` (citation/statute regex), `deposition_tools.py`
   (deposition ingest/search/SOF validation), `extraction_validation.py`
   (record facts, chronology, cross-reference, citation accuracy). Provenance
-  documented in `extraction/README.md`.
+  documented in `extraction_kit/README.md`.
 - **Applied one documented functional fix** to the vendored files: the
   reporter character class `[A-Za-z\.\s]` excluded digits so `F.3d`-style
   citations never matched — widened to `[A-Za-z0-9\.\s]` at 5 regex sites
@@ -132,6 +132,65 @@ OutClaw repo working tree, full git history, and the GitHub remote.
   no cascade API keys were configured this session.
 - g-pry-t handoff priorities (dashboard multi-file ingestion
   `SecurityViolation`, aggregate findings) remain open and are unchanged.
+
+> **RESOLVED 2026-08-11** — the first two items were completed in the
+> round-3 completion pass below. The g-pry-t dashboard priorities remain
+> open and are carried in `NEXT_BUILD_TODO.md` Priority 1.
+
+---
+
+## Round-3 completion pass — 2026-08-11
+
+**Contributor:** Buffy / Freebuff coding agent  
+**Resolves:** both open items from `outclaw_round_3.md` / `NEXT_BUILD_TODO.md`
+
+### Completed
+
+- **Deep factual-contradiction scan** (`deep_contradiction_scan` in
+  `outclaw_extraction.py`, WRAP AND EXTEND). Deterministic — no API keys
+  required — and composes with the vendored shallow scan via
+  `detect_contradictions` (top-level keys preserved, `deep_scan` nested
+  underneath). Detects concrete, reviewable leads:
+  - `date_conflict` — same anchored event, different dates;
+  - `time_conflict` — same anchored event, different exact times;
+  - `amount_conflict` — same anchored event, different amounts;
+  - `negation_conflict` — same anchored event, one document negates it.
+  Approximate values ("around 8:00 a.m.") never conflict with exact ones.
+  Events are anchored by shared entity + shared date or overlapping
+  content words, so unrelated facts in the same documents do not collide.
+  Output stays advisory (`"advisory": true`) and is capped at 50 leads.
+- **Semantic cascade path validated** (`semantic_citation_check`). The
+  path is exercised end-to-end in tests with a faked cascade (no network,
+  no keys): enabled cascade → `semantic_backend: "cascade"` with verdict
+  and confidence; disabled / failing / unrecognized-verdict cascade →
+  clean lexical fallback; `use_llm=False` never touches the cascade; bool
+  confidence is rejected (cannot coerce `true` to 1.0).
+- **`semantic_cascade_status()` helper**: reports whether the model-backed
+  backend is enabled (config-only, no network) so operators see why a run
+  fell back to lexical scoring. Wired into `extraction_record_audit` under
+  `semantic_checks.cascade_status`.
+
+### Verification
+
+- Full suite: **159 tests passed, 1 skipped, exit 0** (was 138 + 1 skipped).
+- extraction suite grew 20 → 46 tests: 8 semantic-cascade path tests,
+  15 deep-scan tests (incl. reviewer-driven false-positive guards:
+  equivalent value formats, "never" ≠ "nevertheless", different-verb
+  non-conflicts, amount-context anchoring), 2 cascade-status tests,
+  1 composed-audit deep-scan wiring test.
+- Deep scan canonicalizes dates/times/amounts before comparing
+  (8:00 a.m. == 8:00 am, $5,000 == $5,000.00, Jan 15 == 1/15), matches
+  negation with word boundaries, and requires a shared action verb for
+  time/date conflicts (amount conflicts use a shared amount-context noun).
+- No change to the DRAFT gate, `safe_to_draft`, or advisory labeling.
+
+### Still open
+
+- g-pry-t dashboard priorities (multi-file `SecurityViolation`, aggregate
+  findings) — `NEXT_BUILD_TODO.md` Priority 1.
+- The jurisdiction-aware trial-prep curriculum vision (oral argument,
+  openings/closings, witness questioning, depositions) is a roadmap idea,
+  not yet built — see `NEXT_BUILD_TODO.md` Priority 6.
 
 ---
 

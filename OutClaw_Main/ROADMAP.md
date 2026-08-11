@@ -1,5 +1,23 @@
 # OutClaw Roadmap
 
+## Round-3 completion slice — 2026-08-11
+
+- [x] Deepened `detect_factual_contradictions` beyond the shallow
+      did/did-not patterns (`deep_contradiction_scan`: date, time, amount,
+      and negation conflicts; deterministic, no API keys; composes under
+      `detect_contradictions` and `extraction_record_audit`).
+- [x] Validated the model-backed semantic cascade path
+      (`semantic_citation_check`) with faked-cascade tests covering
+      enabled / disabled / failing / unrecognized-verdict behavior and
+      bool-confidence rejection.
+- [x] Added `semantic_cascade_status()` (config-only availability probe)
+      and surfaced it in `extraction_record_audit.semantic_checks`.
+- [x] Deep scan hardened post-review: canonicalized value comparison
+      (8:00 a.m. == 8:00 am, $5,000 == $5,000.00), word-boundary negation
+      ("never" ≠ "nevertheless"), shared-action-verb anchoring for
+      time/date conflicts, and amount-context-noun anchoring.
+- [x] Suite at **159 passed, 1 skipped, exit 0** (was 138).
+
 ## Current release slice — 2026-08-08
 
 - [x] Confirm the canonical `outclaw_validator.py` integration contract.

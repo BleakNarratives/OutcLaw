@@ -815,7 +815,7 @@ def audit_text(
             "error": str(exc),
         }
 
-    # Stage 3.25b: extraction extraction layer (advisory only). Feeds the vendored
+    # Stage 3.25b: extraction layer (advisory only). Feeds the vendored
     # citation/statute regex extraction into the report metadata. This is the
     # extraction/ingestion half of the strategic split — the semantic
     # classifier above remains the source of truth for fraud findings, and

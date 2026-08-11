@@ -1,8 +1,7 @@
-# Vendored into OutClaw from the vendored extraction layer 1.0.0 (MIT License)
-# Source: https://github.com/daltonjsawyer-png/extraction
+# Vendored into OutClaw from the vendored extraction layer (MIT License)
 # Copied verbatim into the OutClaw tree (2026-08-11) so the
 # extraction/ingestion layer is self-contained and portable.
-# See extraction/README.md for provenance and OutClaw wrap points.
+# See extraction_kit/README.md for provenance and OutClaw wrap points.
 
 """
 Deposition Processing Tools - Parse, search, and validate deposition transcripts.

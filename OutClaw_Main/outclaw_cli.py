@@ -1265,6 +1265,118 @@ def cmd_guide(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_course(args: argparse.Namespace) -> int:
+    """Plain-language court-mechanics course for self-represented litigants.
+
+    Sub-modes:
+      course --list            all lessons + prep tracks
+      course --lesson <key>    one lesson
+      course --track <key>     one trial-prep track (oral-argument, opening,
+                               closing, direct-exam, cross-exam, deposition)
+      course --term <term>     plain-language glossary lookup
+      course --pack            the full trial-prep pack (all tracks)
+    Advisory study material — never legal advice.
+    """
+    from outclaw_pro_se_course import COURSE  # type: ignore
+
+    if args.json:
+        if args.lesson:
+            payload = COURSE.get_lesson(args.lesson)
+        elif args.track:
+            payload = COURSE.prep_track(args.track)
+        elif args.term:
+            payload = COURSE.lookup_term(args.term)
+        elif args.pack:
+            payload = COURSE.trial_prep_pack()
+        else:
+            payload = COURSE.course_index()
+        if payload is None:
+            print(f"{R}✗ Not found.{_R}", file=sys.stderr)
+            return 2
+        print(json.dumps(payload, indent=2, default=str))
+        return 0
+
+    if args.list or not (args.lesson or args.track or args.term or args.pack):
+        idx = COURSE.course_index()
+        print(f"\n{B}📚 PRO SE COURT COURSE{_R}  (study material — not legal advice)")
+        print(f"\n{B}Lessons:{_R}")
+        for lesson in idx["lessons"]:
+            print(f"  {C}{lesson['key']:<14}{_R} {lesson['title']}")
+        print(f"\n{B}Prep tracks:{_R}")
+        for key, title in idx["prep_tracks"].items():
+            print(f"  {C}{key:<14}{_R} {title}")
+        print(f"\n  {D}Glossary: {idx['glossary_terms']} terms — try: outclaw course --term hearsay{_R}")
+        print(f"\n{D}Usage: outclaw course --lesson <key> │ --track <key> │ --term <word> │ --pack{_R}")
+        return 0
+
+    if args.lesson:
+        lesson = COURSE.get_lesson(args.lesson)
+        if not lesson:
+            print(f"{R}✗ Unknown lesson: {args.lesson}{_R}", file=sys.stderr)
+            print(f"  {D}Try --list for lesson keys.{_R}")
+            return 2
+        l = lesson["lesson"]
+        print(f"\n{B}{l['title']}{_R}")
+        print(f"\n{B}Plain language:{_R}")
+        for line in l["plain_language"]:
+            print(f"  • {line}")
+        print(f"\n{B}Why it matters:{_R}")
+        for line in l["why_it_matters"]:
+            print(f"  • {line}")
+        print(f"\n{G}Do this:{_R}")
+        for line in l["do_this"]:
+            print(f"  ✓ {line}")
+        print(f"\n{R}Common mistakes:{_R}")
+        for line in l["common_mistakes"]:
+            print(f"  ✗ {line}")
+        if l["key_terms"]:
+            print(f"\n{D}Key terms: {', '.join(l['key_terms'])}{_R}")
+        return 0
+
+    if args.track:
+        track = COURSE.prep_track(args.track)
+        if not track:
+            print(f"{R}✗ Unknown track: {args.track}{_R}", file=sys.stderr)
+            print(f"  {D}Try --list for track keys.{_R}")
+            return 2
+        print(f"\n{B}🎯 {track['title'].upper()}{_R}")
+        print(f"\n{B}Goal:{_R} {track['goal']}")
+        print(f"\n{B}Structure:{_R}")
+        for i, step in enumerate(track["structure"], 1):
+            print(f"  {i}. {step}")
+        print(f"\n{G}Do:{_R}")
+        for line in track["do"]:
+            print(f"  ✓ {line}")
+        print(f"\n{R}Avoid:{_R}")
+        for line in track["avoid"]:
+            print(f"  ✗ {line}")
+        related = COURSE.related_lessons(args.track)["related_lessons"]
+        if related:
+            print(f"\n{D}Pair with: {', '.join(related)} — outclaw course --lesson <key>{_R}")
+        return 0
+
+    if args.term:
+        term = COURSE.lookup_term(args.term)
+        if not term:
+            print(f"{R}✗ Term not in glossary: {args.term}{_R}", file=sys.stderr)
+            return 2
+        print(f"\n{B}{term['term']}{_R}")
+        print(f"  {term['definition']}")
+        return 0
+
+    if args.pack:
+        pack = COURSE.trial_prep_pack()
+        print(f"\n{B}🧰 FULL TRIAL-PREP PACK{_R}  (study material — not legal advice)")
+        for key, track in pack["tracks"].items():
+            print(f"\n{B}🎯 {track['title'].upper()}{_R}")
+            print(f"  {B}Goal:{_R} {track['goal']}")
+            for i, step in enumerate(track["structure"], 1):
+                print(f"    {i}. {step}")
+            print(f"  {G}Do:{_R} {' '.join(track['do'])}")
+            print(f"  {R}Avoid:{_R} {' '.join(track['avoid'])}")
+        print()
+        return 0
+
 def cmd_impact(args: argparse.Namespace) -> int:
     """'So what?' reality check on grievance evidence."""
     _ensure_lws_modules()
@@ -1351,7 +1463,7 @@ def cmd_transcript_search(args: argparse.Namespace) -> int:
 
 
 def cmd_record_audit(args: argparse.Namespace) -> int:
-    """Run the extraction extraction/ingestion layer over a case record.
+    """Run the extraction/ingestion layer over a case record.
 
     Advisory only: citations/statutes per document, cross-document
     cross-referencing, chronology, contradiction leads, and (when a
@@ -1388,7 +1500,7 @@ def cmd_record_audit(args: argparse.Namespace) -> int:
         print(json.dumps(report, indent=2, default=str))
         return 0
 
-    print(f"\n{B}📋 RECORD AUDIT — extraction extraction layer (advisory only){_R}")
+    print(f"\n{B}📋 RECORD AUDIT — extraction layer (advisory only){_R}")
     print(f"  Documents: {', '.join(report['documents_processed'])}")
     for name, meta in report["per_document_extraction"].items():
         print(
@@ -1815,10 +1927,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_demo.set_defaults(func=cmd_demo, list_only=False)
 
-    # ── record-audit (extraction extraction layer, advisory) ──
+    # ── record-audit (extraction layer, advisory) ──
     p_rec = sub.add_parser(
         "record-audit",
-        help="extraction extraction layer over a case record: citations, cross-reference, chronology, SOF-vs-record validation (advisory)",
+        help="extraction layer over a case record: citations, cross-reference, chronology, SOF-vs-record validation (advisory)",
     )
     p_rec.add_argument(
         "--doc", action="append", type=Path, default=[], help="Record document (.txt/.md); repeatable"
@@ -1864,6 +1976,24 @@ def build_parser() -> argparse.ArgumentParser:
     p_obj.add_argument("--page", type=int, default=None, help="Transcript page")
     p_obj.add_argument("--line", type=int, default=None, help="Transcript line")
     p_obj.set_defaults(func=cmd_objections)
+
+    # ── course (plain-language court-mechanics course for pro se litigants) ──
+    p_course = sub.add_parser(
+        "course",
+        help="Plain-language court-mechanics course: lessons, prep tracks, glossary (advisory study material)",
+    )
+    p_course.add_argument(
+        "--list", action="store_true", help="List all lessons and prep tracks"
+    )
+    p_course.add_argument("--lesson", help="Lesson key (e.g. the_record, objections)")
+    p_course.add_argument(
+        "--track",
+        help="Prep track key (oral-argument, opening, closing, direct-exam, cross-exam, deposition)",
+    )
+    p_course.add_argument("--term", help="Plain-language glossary term lookup")
+    p_course.add_argument("--pack", action="store_true", help="Full trial-prep pack (all tracks)")
+    p_course.add_argument("--json", action="store_true", help="Output raw JSON")
+    p_course.set_defaults(func=cmd_course)
 
     # ── grievance ──
     p_gr = sub.add_parser(

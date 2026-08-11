@@ -1,4 +1,4 @@
-"""Tests for the vendored ``extraction`` package and ``outclaw_extraction`` layer.
+"""Tests for the vendored ``extraction_kit`` package and ``outclaw_extraction`` layer.
 
 Covers:
   * vendored package loads standalone and via the OutClaw namespace
@@ -7,7 +7,7 @@ Covers:
   * cross-referencing, chronology, contradiction leads (extraction_validation)
   * semantic citation check (WRAP AND EXTEND: lexical fallback is default)
   * composed extraction_record_audit stays advisory
-  * outclaw_unified.audit_text surfaces extraction extraction metadata without
+  * outclaw_unified.audit_text surfaces extraction metadata without
     changing safe_to_draft semantics
 """
 
@@ -25,7 +25,7 @@ from unittest.mock import patch
 _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE.parent))
 
-import extraction  # noqa: E402
+import extraction_kit  # noqa: E402
 import outclaw_extraction as ob  # noqa: E402
 import outclaw_unified as unified  # noqa: E402
 
@@ -59,7 +59,7 @@ Corporation for approximately five years.
 class TestVendoredPackageLoads(unittest.TestCase):
     def test_direct_import_from_outclaw_main(self):
         package = subprocess.run(
-            [sys.executable, "-c", "import extraction, outclaw_extraction"],
+            [sys.executable, "-c", "import extraction_kit, outclaw_extraction"],
             cwd=_HERE.parent,
             capture_output=True,
             text=True,
@@ -69,7 +69,7 @@ class TestVendoredPackageLoads(unittest.TestCase):
 
     def test_namespace_import_from_workspace_root(self):
         package = subprocess.run(
-            [sys.executable, "-c", "import OutClaw.extraction; import OutClaw.outclaw_extraction"],
+            [sys.executable, "-c", "import OutClaw.extraction_kit; import OutClaw.outclaw_extraction"],
             cwd=_HERE.parent.parent.parent,
             capture_output=True,
             text=True,
@@ -87,7 +87,7 @@ class TestVendoredPackageLoads(unittest.TestCase):
             "extract_judge_patterns",
             "extract_circuit_law",
         ):
-            self.assertTrue(hasattr(extraction, name), f"extraction missing {name}")
+            self.assertTrue(hasattr(extraction_kit, name), f"extraction_kit missing {name}")
 
 
 class TestCitationExtraction(unittest.TestCase):
@@ -151,7 +151,7 @@ class TestRecordAnalysis(unittest.TestCase):
     def test_cross_reference_finds_shared_authority(self):
         # Note: the vendored regex greedily treats any sentence lead-in before
         # "v." as part of the case name, so citations should lead the sentence
-        # for reliable case-name extraction. See extraction/README.md (known limit).
+        # for reliable case-name extraction. See extraction_kit/README.md (known limit).
         docs = {
             "brief-a.txt": "Smith v. Jones, 123 F.3d 456 controls this argument.",
             "brief-b.txt": "Smith v. Jones, 123 F.3d 456 is the same authority.",
@@ -216,6 +216,266 @@ class TestSemanticCheck(unittest.TestCase):
         self.assertTrue(result["advisory"])
         self.assertIn("total_citations_found", result)
         self.assertEqual(result["semantic_extended_count"], 0)
+
+    # --- Semantic cascade path (round 3 validation) ---------------------
+    # No API keys in the test env: the path is validated with a faked
+    # cascade so the code path (import -> enabled check -> complete ->
+    # verdict/confidence extraction) is locked without network access.
+
+    class _FakeCascadeResult:
+        def __init__(self, ok, data):
+            self.ok = ok
+            self.data = data
+
+    class _FakeCascade:
+        def __init__(self, enabled=True, ok=True, data=None):
+            self.enabled = enabled
+            self._ok = ok
+            self._data = data or {
+                "verdict": "opposite",
+                "confidence": 0.87,
+                "reasoning": "the holding is the opposite of the proposition",
+            }
+            self.calls = []
+
+        def complete(self, prompt, task, min_confidence=0.0, max_tokens=2048):
+            self.calls.append(
+                {"task": task, "min_confidence": min_confidence, "max_tokens": max_tokens}
+            )
+            result = TestSemanticCheck._FakeCascadeResult(self._ok, self._data)
+            return result
+
+    def _patch_cascade(self, fake):
+        return patch(
+            "OutClaw.outclaw_model_cascade.get_cascade",
+            return_value=fake,
+        )
+
+    def test_semantic_path_uses_cascade_when_enabled(self):
+        fake = self._FakeCascade(enabled=True)
+        with self._patch_cascade(fake):
+            check = ob.semantic_citation_check(
+                "The defendant had no duty to act.",
+                "The court held the defendant had a duty to act.",
+                use_llm=True,
+            )
+        self.assertEqual(check["semantic_backend"], "cascade")
+        self.assertEqual(check["semantic_verdict"], "opposite")
+        self.assertEqual(check["confidence"], 0.87)
+        self.assertEqual(fake.calls[0]["task"], "citation_support")
+        self.assertEqual(fake.calls[0]["min_confidence"], 0.60)
+
+    def test_semantic_path_falls_back_to_lexical_when_disabled(self):
+        fake = self._FakeCascade(enabled=False)
+        with self._patch_cascade(fake):
+            check = ob.semantic_citation_check(
+                "A warrant is required.",
+                "A warrant is required for a home search.",
+                use_llm=True,
+            )
+        self.assertEqual(check["semantic_backend"], "lexical")
+        self.assertIsNone(check["semantic_verdict"])
+        self.assertFalse(fake.calls)  # disabled cascade is never called
+
+    def test_semantic_path_falls_back_when_cascade_fails(self):
+        fake = self._FakeCascade(enabled=True, ok=False, data=None)
+        with self._patch_cascade(fake):
+            check = ob.semantic_citation_check(
+                "A warrant is required.",
+                "A warrant is required for a home search.",
+                use_llm=True,
+            )
+        self.assertEqual(check["semantic_backend"], "lexical")
+        self.assertIsNone(check["semantic_verdict"])
+
+    def test_semantic_path_falls_back_when_verdict_unrecognized(self):
+        fake = self._FakeCascade(
+            enabled=True, data={"verdict": "maybe", "confidence": 0.9}
+        )
+        with self._patch_cascade(fake):
+            check = ob.semantic_citation_check(
+                "A warrant is required.",
+                "A warrant is required for a home search.",
+                use_llm=True,
+            )
+        self.assertEqual(check["semantic_backend"], "lexical")
+        self.assertIsNone(check["semantic_verdict"])
+
+    def test_semantic_path_rejects_bool_confidence(self):
+        # bool is an int subclass; confidence must not coerce True to 1.0.
+        fake = self._FakeCascade(
+            enabled=True,
+            data={"verdict": "supported", "confidence": True},
+        )
+        with self._patch_cascade(fake):
+            check = ob.semantic_citation_check(
+                "A warrant is required.",
+                "A warrant is required for a home search.",
+                use_llm=True,
+            )
+        self.assertEqual(check["semantic_verdict"], "supported")
+        self.assertIsNone(check["confidence"])
+
+    def test_semantic_path_use_llm_off_never_touches_cascade(self):
+        fake = self._FakeCascade(enabled=True)
+        with self._patch_cascade(fake):
+            check = ob.semantic_citation_check(
+                "A warrant is required.",
+                "A warrant is required for a home search.",
+                use_llm=False,
+            )
+        self.assertEqual(check["semantic_backend"], "lexical")
+        self.assertFalse(fake.calls)
+
+
+class TestDeepContradictionScan(unittest.TestCase):
+    def test_detects_negation_conflict(self):
+        docs = {
+            "dep.txt": "John Smith was present at the hearing on January 15, 2024.",
+            "record.txt": "John Smith was not present at the hearing on January 15, 2024.",
+        }
+        result = ob.deep_contradiction_scan(docs)
+        types = {lead["type"] for lead in result["leads"]}
+        self.assertIn("negation_conflict", types)
+        self.assertEqual(result["total_leads"], len(result["leads"]))
+        self.assertTrue(result["advisory"])
+
+    def test_detects_date_conflict(self):
+        docs = {
+            "dep.txt": "John Smith arrived at the warehouse on January 15, 2024.",
+            "record.txt": "John Smith arrived at the warehouse on January 16, 2024.",
+        }
+        result = ob.deep_contradiction_scan(docs)
+        types = {lead["type"] for lead in result["leads"]}
+        self.assertIn("date_conflict", types)
+
+    def test_detects_time_conflict(self):
+        docs = {
+            "dep.txt": "John Smith arrived at the warehouse at 8:00 a.m.",
+            "record.txt": "John Smith arrived at the warehouse at 9:00 a.m.",
+        }
+        result = ob.deep_contradiction_scan(docs)
+        types = {lead["type"] for lead in result["leads"]}
+        self.assertIn("time_conflict", types)
+
+    def test_detects_amount_conflict(self):
+        docs = {
+            "brief.txt": "The settlement paid to John Smith was $5,000.",
+            "record.txt": "The settlement paid to John Smith was $50,000.",
+        }
+        result = ob.deep_contradiction_scan(docs)
+        types = {lead["type"] for lead in result["leads"]}
+        self.assertIn("amount_conflict", types)
+
+    def test_approximate_values_do_not_conflict(self):
+        docs = {
+            "dep.txt": "John Smith arrived around 8:00 a.m.",
+            "record.txt": "John Smith arrived at 8:00 a.m.",
+        }
+        result = ob.deep_contradiction_scan(docs)
+        self.assertEqual(result["total_leads"], 0)
+
+    def test_equivalent_value_formats_do_not_conflict(self):
+        # 8:00 a.m. == 8:00 am; $5,000 == $5,000.00; Jan 15 == 1/15.
+        docs = {
+            "dep.txt": "John Smith arrived at the hearing at 8:00 a.m. on January 15, 2024.",
+            "record.txt": "John Smith arrived at the hearing at 8:00 am on 1/15/2024.",
+        }
+        result = ob.deep_contradiction_scan(docs)
+        self.assertEqual(result["total_leads"], 0)
+        docs2 = {
+            "dep.txt": "The settlement paid to John Smith was $5,000.",
+            "record.txt": "The settlement paid to John Smith was $5,000.00.",
+        }
+        self.assertEqual(ob.deep_contradiction_scan(docs2)["total_leads"], 0)
+
+    def test_never_does_not_match_nevertheless(self):
+        docs = {
+            "dep.txt": "John nevertheless arrived at the warehouse on January 15, 2024.",
+            "record.txt": "John Smith arrived at the warehouse on January 15, 2024.",
+        }
+        result = ob.deep_contradiction_scan(docs)
+        self.assertEqual(result["total_leads"], 0)
+
+    def test_different_verbs_are_not_a_conflict(self):
+        # Arriving at 8 and leaving at 9 are different events, not a
+        # contradiction — the shared person alone must not produce a lead.
+        docs = {
+            "dep.txt": "John Smith arrived at the warehouse at 8:00 a.m.",
+            "record.txt": "John Smith left the warehouse at 9:00 a.m.",
+        }
+        result = ob.deep_contradiction_scan(docs)
+        types = {lead["type"] for lead in result["leads"]}
+        self.assertNotIn("time_conflict", types)
+
+    def test_amount_context_noun_anchors_without_entity(self):
+        # "The settlement was $5,000" vs "$50,000" has no proper noun;
+        # the shared amount-context noun must still anchor the conflict.
+        docs = {
+            "dep.txt": "The settlement was $5,000.",
+            "record.txt": "The settlement was $50,000.",
+        }
+        result = ob.deep_contradiction_scan(docs)
+        types = {lead["type"] for lead in result["leads"]}
+        self.assertIn("amount_conflict", types)
+
+    def test_consistent_documents_produce_no_leads(self):
+        docs = {
+            "dep.txt": "John Smith arrived at the warehouse at 8:00 a.m. on January 15, 2024.",
+            "record.txt": "John Smith arrived at the warehouse at 8:00 a.m. on January 15, 2024.",
+        }
+        result = ob.deep_contradiction_scan(docs)
+        self.assertEqual(result["total_leads"], 0)
+
+    def test_detect_contradictions_composes_deep_scan(self):
+        docs = {
+            "dep.txt": "John Smith was present at the hearing on January 15, 2024.",
+            "record.txt": "John Smith was not present at the hearing on January 15, 2024.",
+        }
+        result = ob.detect_contradictions(docs)
+        # Vendored top-level keys preserved.
+        self.assertIn("total_contradictions", result)
+        self.assertIn("contradictions", result)
+        self.assertIn("potential_omissions", result)
+        # Deep scan composed underneath.
+        self.assertIn("deep_scan", result)
+        self.assertEqual(result["deep_scan"]["scan"], "outclaw-deep-factual-v1")
+        self.assertGreaterEqual(result["deep_scan"]["total_leads"], 1)
+        json.dumps(result)
+
+    def test_deep_scan_json_safe(self):
+        docs = {
+            "a.txt": "John Smith received $5,000 on January 15, 2024 at 8:00 a.m.",
+            "b.txt": "John Smith received $50,000 on January 16, 2024 at 9:00 a.m.",
+        }
+        result = ob.deep_contradiction_scan(docs)
+        json.dumps(result)
+        self.assertGreaterEqual(result["total_leads"], 3)
+
+    def test_composed_audit_carries_deep_scan(self):
+        docs = {
+            "dep.txt": "John Smith arrived at the warehouse at 8:00 a.m. on January 15, 2024.",
+            "record.txt": "John Smith arrived at the warehouse at 9:00 a.m. on January 15, 2024.",
+        }
+        report = ob.extraction_record_audit(documents=docs)
+        self.assertIn("deep_scan", report["contradiction_leads"])
+        self.assertGreaterEqual(
+            report["contradiction_leads"]["deep_scan"]["total_leads"], 1
+        )
+
+    def test_cascade_status_is_advisory_and_json_safe(self):
+        status = ob.semantic_cascade_status()
+        self.assertTrue(status["advisory"])
+        self.assertIn("enabled", status)
+        self.assertIsInstance(status["enabled"], bool)
+        json.dumps(status)
+
+    def test_composed_audit_reports_cascade_status(self):
+        report = ob.extraction_record_audit({"a.txt": "No citations here."})
+        checks = report["semantic_checks"]
+        self.assertEqual(checks["use_llm"], False)
+        self.assertIn("cascade_status", checks)
+        self.assertIn("enabled", checks["cascade_status"])
 
 
 class TestComposedAudit(unittest.TestCase):
@@ -390,7 +650,7 @@ class TestUnifiedWiring(unittest.TestCase):
 
     def test_audit_text_extraction_metadata_never_blocks_draft_by_itself(self):
         # The extraction layer is metadata-only: a draft with zero findings but
-        # extraction extraction present must still be safe to draft.
+        # extraction present must still be safe to draft.
         report = unified.audit_text("This draft contains no citations.")
         payload = report.to_dict()
         self.assertIn("extraction", payload["extraction_metadata"])

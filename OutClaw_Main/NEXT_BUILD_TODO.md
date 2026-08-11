@@ -1,6 +1,8 @@
 # OutClaw Next-Build Todo
 
-This is the active work list after commit `3309229` (`feat: publish case review batches transactionally`).
+Active work list — updated 2026-08-11 after the round-3 completion pass
+(deep contradiction scan + semantic cascade path validation; suite now
+**159 passed, 1 skipped**).
 
 ## Completed and checked off
 
@@ -22,18 +24,33 @@ This is the active work list after commit `3309229` (`feat: publish case review 
 
 ## extraction integration — DONE (2026-08-11, branch agent/extraction-integration-20260811)
 
-- [x] Vendored the vendored extraction layer core modules into `extraction/` (MIT, self-contained; provenance in `extraction/README.md`)
+- [x] Vendored the vendored extraction layer core modules into `extraction_kit/` (MIT, self-contained; provenance in `extraction_kit/README.md`)
 - [x] Applied one documented regex fix: reporter class widened to accept digits (F.3d-style citations now match)
 - [x] Added `outclaw_extraction.py` integration layer (citation extraction, deposition ingest + SOF validation, cross-reference, chronology, contradiction leads, semantic citation check)
 - [x] Wired advisory `extraction_metadata["extraction"]` into `outclaw_unified.audit_text` — does not touch `safe_to_draft`
 - [x] Added `outclaw_tests/test_extraction_integration.py` (25 tests); full suite 138 passed, 1 skipped
 - [x] Utility surfaces: `record-audit` CLI subcommand (outclaw_cli.py) + advisory `extraction` in compile_case_docs audit sidecars (fail-closed)
-- [x] Uninstalled `the vendored extraction layer` from the system — vendored `extraction/` is the only copy
+- [x] Uninstalled `the vendored extraction layer` from the system — vendored `extraction_kit/` is the only copy
 
-## Open extraction follow-ups (from outclaw_round_3.md)
+## Round-3 completion — DONE (2026-08-11)
 
-- [ ] Enable/validate the model-backed semantic path (`semantic_citation_check` uses the free-cloud cascade when configured; defaults to lexical)
-- [ ] Deepen `detect_factual_contradictions` beyond shallow did/did-not patterns
+- [x] Enabled/validated the model-backed semantic path: `semantic_citation_check` is exercised end-to-end with a faked cascade (enabled → semantic verdict; disabled/failing/unrecognized → lexical fallback; bool confidence rejected). Real cascade keys activate it at runtime (`OUTCLAW_CASCADE=1` + any provider key); `semantic_cascade_status()` reports availability without network calls.
+- [x] Deepened `detect_factual_contradictions` beyond did/did-not: `deep_contradiction_scan` adds deterministic date/time/amount/negation conflict leads, composes under `detect_contradictions`, stays advisory, and is covered by 11 tests.
+
+## Repo integrity guard — DONE (2026-08-11)
+
+- [x] Added `outclaw_guard.py`: fails the build (exit 1) if any private client
+      identifier (melissa/stewart/srewart/26-548) or third-party product name
+      ever reappears in the working tree. Scans file contents + paths,
+      case-insensitive; skips `.git`/venv/site-packages/`__pycache__` and
+      binary/oversized files (ext + 2MB cap) for speed (~0.3s on full repo).
+      Self-skips its own file and its test file (which use the identifiers as
+      fixtures). Forward guardrail only — does not purge git history/remote
+      cache (that stays a separate destructive step).
+- [x] Wired into `.github/workflows/ci.yml` as a `Repo integrity guard` step.
+- [x] Added `outclaw_tests/test_guard.py` (6 tests): clean repo pass, clean
+      temp tree, content-leak catch, path-leak catch, venv-skip, JSON output.
+      Full suite now **182 passed, 1 skipped** (was 176).
 
 ## Priority 1 — stabilize dashboard ingestion
 
@@ -71,6 +88,29 @@ This is the active work list after commit `3309229` (`feat: publish case review 
 - [ ] Add `fsync` crash durability only if power-loss recovery is required.
 - [ ] Add a Windows/Termux locking strategy only if those platforms are actually supported.
 - [ ] Keep GitHub repository private until tests and disclaimers are accepted.
+
+## Priority 6 — jurisdiction-aware trial-prep curriculum (product vision)
+
+North star: make OutClaw THE go-to tool for pro se litigants — everything a
+self-represented person needs to prepare for trial, not just audit documents.
+Foundation for this already exists on disk (`jurisdiction.py` state detection,
+`outclaw_objections_engine.py`, `outclaw_irac.py`); the course/guide content
+system does not. Build it in this order:
+
+- [ ] Design the jurisdiction curriculum registry: per-jurisdiction
+      (KS/OK/MO/CO/NE/TX/CA…) prep tracks keyed off `jurisdiction.py` detection,
+      with the trial-prep topics below as reusable lesson modules.
+- [ ] Trial prep track: oral argument structure and practice scripts;
+      opening statements; closing arguments; direct and cross-examination
+      questioning plans; deposition prep (questioning strategy, not just
+      ingest/search).
+- [ ] Wire the objections engine into the questioning module so practice
+      sessions surface live objections with the correct rule basis.
+- [ ] Add a pro-se checklist per track (evidence admission, hearsay
+      exceptions, impeachment, jury selection) with jurisdiction-specific
+      caveats flagged as advisory, never as legal advice.
+- [ ] Surface the curriculum in `record-audit`/CLI and the dashboard as
+      an advisory "prep pack" alongside the audit output.
 
 ## Fixed constraints — locked
 

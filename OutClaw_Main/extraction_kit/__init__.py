@@ -1,13 +1,13 @@
 """
-extraction — vendored extraction Legal extraction/ingestion layer for OutClaw.
+extraction_kit — vendored extraction/ingestion layer for OutClaw.
 
-This package is a verbatim copy of the three core modules from
-``the vendored extraction layer`` 1.0.0 (MIT License, source: daltonjsawyer-png/extraction),
-so OutClaw's extraction/ingestion layer is self-contained and portable
-(no dependency on a user-level site-packages install).
+This package is a verbatim copy of three self-contained extraction modules
+(MIT License) vendored into OutClaw so the extraction/ingestion layer is
+self-contained and portable (no dependency on a user-level site-packages
+install).
 
 Strategic split (see root ``outclaw_round_3.md``):
-  * extraction owns the extraction / ingestion layer.
+  * extraction_kit owns the extraction / ingestion layer.
   * OutClaw's differentiation is semantic fraud scoring on top of it —
     the semantic citation classifier in ``outclaw_unified`` stays the
     source of truth for fraud findings. Everything in this package is

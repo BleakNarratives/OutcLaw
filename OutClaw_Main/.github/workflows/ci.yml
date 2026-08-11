@@ -35,3 +35,6 @@ jobs:
 
       - name: Run conformance regression
         run: python outclaw_regression.py
+
+      - name: Repo integrity guard (no private identifiers / third-party names)
+        run: python outclaw_guard.py
