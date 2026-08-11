@@ -31,7 +31,7 @@ python3 compile_case_docs.py \
   --output-dir ~/akasha/court_filings/
 ```
 
-Outputs are **human-review evidence, not filed pleadings**. An evidence match is not legal validation or authorization to file. Missing evidence and per-file errors produce a nonzero CLI status. The canonical tree currently has no `outclaw_builder.py`; the permanent DRAFT safety block remains active.
+Outputs are **human-review evidence, not filed pleadings**. An evidence match is not legal validation or authorization to file. Missing evidence and validation errors produce a nonzero CLI status and no partial batch is published. The compiler stages a batch in the output directory, publishes `compile_manifest.json` last, and uses a process lock plus recovery journal for interrupted replacements. Readers should treat the manifest as the publication marker. The lock uses POSIX `fcntl` semantics; this compiler is currently intended for Linux/macOS-style environments. Staging and rollback directories can temporarily contain duplicate packet text, and a failed rollback intentionally preserves them with `.compile_recovery.json` until recovery succeeds; protect the output directory and remove retained recovery material after confirming restoration. Unjournaled staging/backup directories are never deleted automatically. The canonical tree currently has no `outclaw_builder.py`; the permanent DRAFT safety block remains active.
 
 ## Round 3 extraction layer
 

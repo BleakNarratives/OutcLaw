@@ -16,9 +16,9 @@
    - Decouple legacy evidence consistency from citation-fraud auditing.
    - Keep both APIs explicit; do not silently substitute one for the other.
 2. **Transactional batch publication**
-   - Add a staging-directory commit protocol and manifest-last publication.
-   - Define recovery behavior for process crashes between renames.
-   - Add process locking for concurrent `--force` runs; current unique temp names reduce collisions but do not serialize writers.
+   - [x] Add a same-directory staging-directory commit protocol and manifest-last publication.
+   - [x] Define recovery behavior for process crashes between renames with a durable recovery journal.
+   - [x] Add process locking for concurrent `--force` runs; readers should treat `compile_manifest.json` as the publication marker. The current lock is POSIX-only; retained rollback material may contain duplicate packet text until recovery succeeds, and unjournaled staging/backup directories are left for manual inspection.
 3. **Evidence provenance**
    - Add source-file metadata and immutable evidence references without copying sensitive material unnecessarily.
 4. **Human review workflow**
