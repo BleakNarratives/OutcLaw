@@ -53,7 +53,9 @@ FORBIDDEN = [
     "srewart",
     "26-548",
     # Third-party product name (removed 2026-08-11) — never to return.
-    "extraction",
+    # This guard file is self-skipped, so the name lives only here (and in
+    # test_guard.py), never in the codebase it protects.
+    "baymax",
 ]
 
 # Paths that are always skipped (build artifacts, vendored third-party deps,

@@ -106,7 +106,7 @@ class TestGuard(unittest.TestCase):
             venv = root / ".venv" / "lib" / "python3" / "site-packages"
             venv.mkdir(parents=True)
             (venv / "dep.py").write_text(
-                "import extraction  # third-party dep", encoding="utf-8"
+                "import baymax  # third-party dep", encoding="utf-8"
             )
             run = self._run("--json", cwd=root)
             self.assertEqual(run.returncode, 0, run.stdout + run.stderr)

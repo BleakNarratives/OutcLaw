@@ -40,13 +40,13 @@ Active work list — updated 2026-08-11 after the round-3 completion pass
 ## Repo integrity guard — DONE (2026-08-11)
 
 - [x] Added `outclaw_guard.py`: fails the build (exit 1) if any private client
-      identifier (melissa/stewart/srewart/26-548) or third-party product name
-      ever reappears in the working tree. Scans file contents + paths,
-      case-insensitive; skips `.git`/venv/site-packages/`__pycache__` and
-      binary/oversized files (ext + 2MB cap) for speed (~0.3s on full repo).
-      Self-skips its own file and its test file (which use the identifiers as
-      fixtures). Forward guardrail only — does not purge git history/remote
-      cache (that stays a separate destructive step).
+      identifier or third-party product name ever reappears in the working
+      tree. Scans file contents + paths, case-insensitive; skips
+      `.git`/venv/site-packages/`__pycache__` and binary/oversized files (ext +
+      2MB cap) for speed (~0.3s on full repo). Self-skips its own file and its
+      test file (which use the identifiers as fixtures). Forward guardrail only
+      — does not purge git history/remote cache (that stays a separate
+      destructive step).
 - [x] Wired into `.github/workflows/ci.yml` as a `Repo integrity guard` step.
 - [x] Added `outclaw_tests/test_guard.py` (6 tests): clean repo pass, clean
       temp tree, content-leak catch, path-leak catch, venv-skip, JSON output.
