@@ -10,22 +10,41 @@
 - [x] Add focused tests for evidence matches, blocked evidence, missing input, and blocked CLI exit status.
 - [x] Use unique same-directory temporary files and paired rollback for output writes.
 
+## Completed next-safe track
+
+- [x] **Transactional batch publication** — implemented in `compile_case_docs.py` and committed as `3309229`.
+  - [x] Same-directory staging and manifest-last publication.
+  - [x] Durable recovery journal for interrupted replacements.
+  - [x] POSIX process locking for concurrent `--force` runs.
+  - [x] All-or-nothing batch behavior on validation errors.
+  - [x] Recovery and conservative-cleanup tests.
+
 ## Next safe tracks
 
 1. **Validator separation**
    - Decouple legacy evidence consistency from citation-fraud auditing.
    - Keep both APIs explicit; do not silently substitute one for the other.
-2. **Transactional batch publication**
-   - [x] Add a same-directory staging-directory commit protocol and manifest-last publication.
-   - [x] Define recovery behavior for process crashes between renames with a durable recovery journal.
-   - [x] Add process locking for concurrent `--force` runs; readers should treat `compile_manifest.json` as the publication marker. The current lock is POSIX-only; retained rollback material may contain duplicate packet text until recovery succeeds, and unjournaled staging/backup directories are left for manual inspection.
-3. **Evidence provenance**
+
+2. **Evidence provenance**
    - Add source-file metadata and immutable evidence references without copying sensitive material unnecessarily.
-4. **Human review workflow**
+   - Define retention and cleanup behavior for source-derived artifacts.
+
+3. **Human review workflow**
    - Add operator annotations and review disposition fields to sidecars.
    - Keep all generated artifacts labeled as review material until a human approves them.
-5. **Builder decision**
-   - Reassess whether a builder is needed only after the validator and review workflow are stable.
+
+4. **Dashboard ingestion stabilization**
+   - Reproduce the multi-file `SecurityViolation` path issue in `dashboard/security.py`.
+   - Correct temporary-upload path handling without weakening traversal/injection protections.
+   - Add multi-file aggregation tests in `web_app.py` and dashboard tests.
+
+5. **Operational hardening**
+   - Add crash-durability `fsync` behavior if power-loss recovery becomes a requirement.
+   - Add cross-platform locking if Windows/Termux support is required; current batch locking is POSIX-only.
+   - Keep the repository private until testing and disclaimers are reviewed.
+
+6. **Builder decision**
+   - Reassess whether a builder is needed only after validator separation and review workflow stability.
    - Any future builder must remain behind the existing safety gate and human acknowledgment.
 
 ## Explicit non-goals

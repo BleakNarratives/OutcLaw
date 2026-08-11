@@ -20,8 +20,8 @@
 
 ### Verification
 
-- Focused compiler tests: 4 passed.
-- Existing orchestrator tests: 29 passed.
+- Focused compiler tests: 9 passed in the final focused compiler run; the final repository validation reached 113 passing tests with 1 skipped.
+- Existing orchestrator tests: included in the full 113-test validation.
 - Python compilation: passed.
 - Temporary blocked CLI smoke test: passed with exit code `1`.
 - No unsupervised pleading text generated.
@@ -37,8 +37,10 @@
 
 ### Remaining
 
-- A true transactional staging/manifest publication protocol remains future work; concurrent `--force` runs are not serialized.
-- Validator API separation and human disposition workflow remain future tracks.
+- Transactional staging/manifest publication is now implemented in commit `3309229`; concurrent `--force` runs are serialized on POSIX hosts, with `compile_manifest.json` as the publication marker.
+- The latest build was committed locally and not pushed to GitHub; the repository remains private.
+- Secondary recovery manifest: Nat snapshot `snap_2b4de97333ea` for `OutClaw_Main`.
+- Validator API separation, dashboard ingestion stabilization, evidence provenance, and human disposition workflow remain future tracks.
 
 ---
 
